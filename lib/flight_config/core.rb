@@ -26,31 +26,26 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'flight_config/core'
+require 'flight_config/patches/tty_config'
 
 module FlightConfig
-  module Loader
-    include Core
-
-    def self.included(base)
-      base.extend(ClassMethods)
+  module Core
+    def self.read(obj)
+      return unless File.exists?(obj.path)
+      obj.__data__.read(obj.path)
     end
 
-    module ClassMethods
-      def update(*a)
-        new(*a).tap do |attr|
-          Core.read(attr)
-          if block_given?
-            yield attr
-            Core.write(attr)
-          end
-        end
-      end
+    def self.write(obj)
+      FileUtils.mkdir_p(File.dirname(obj.path))
+      obj.__data__.write(obj.path, force: true)
+    end
 
-      def load(*a, &_b)
-        update(*a)
-      end
+    def __data__
+      @__data__ ||= TTY::Config.new
+    end
+
+    def path
+      raise NotImplementedError
     end
   end
 end
-
