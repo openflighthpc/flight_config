@@ -27,4 +27,6 @@
 #
 
 require "flight_config/version"
+require 'flight_config/loader'
+require 'flight_config/updater'
 

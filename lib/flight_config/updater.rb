@@ -26,10 +26,10 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'flight_config/core'
+require 'flight_config/loader'
 
 module FlightConfig
-  module Loader
+  module Updater
     include Core
 
     def self.included(base)
@@ -37,10 +37,17 @@ module FlightConfig
     end
 
     module ClassMethods
-      def load(*a)
-        new(*a).tap { |c| Core.read(c) }
+      include Loader::ClassMethods
+
+      def update(*a)
+        new(*a).tap do |attr|
+          Core.read(attr)
+          if block_given?
+            yield attr
+            Core.write(attr)
+          end
+        end
       end
     end
   end
 end
-
