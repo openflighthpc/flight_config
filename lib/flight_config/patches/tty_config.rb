@@ -40,10 +40,6 @@ module FlightConfig
       end
 
       module PatchedYAML
-        class << self
-          delegate_missing_to Psych
-        end
-
         ##
         # Overload `safe_load` to always allow aliases
         #
@@ -52,7 +48,31 @@ module FlightConfig
                            whitelist_symbols = [],
                            _aliases = false,
                            filename = nil)
-          super(yaml, whitelist_classes, whitelist_symbols, true, filename)
+          Psych.safe_load(yaml,
+                          whitelist_classes,
+                          whitelist_symbols,
+                          true,
+                          filename)
+        end
+
+
+        ##
+        # Delegate missing methods to Psych
+        #
+        def self.method_missing(s, *a, **h, &b)
+          if respond_to_missing?(s) == :psych_method
+            Psych.public_send(s, *a, **h, &b)
+          else
+            super
+          end
+        end
+
+        ##
+        # Check if the missing method is defined on Psych
+        #
+        def self.respond_to_missing?(s)
+          return :psych_method if Psych.respond_to?(s)
+          super
         end
       end
     end
