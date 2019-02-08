@@ -28,6 +28,9 @@
 
 require 'flight_config/core'
 
+# NOTE: The `Loader` is going to be renamed `Reader` at some point, this will
+# allow dependent application to make the switch smoothly
+
 module FlightConfig
   module Loader
     include Core
@@ -40,7 +43,9 @@ module FlightConfig
       def load(*a)
         new(*a).tap { |c| Core.read(c) }
       end
+      alias_method :read, :load
     end
   end
+  Reader = Loader
 end
 
