@@ -46,6 +46,13 @@ module FlightConfig
       end
     end
 
+    def self.create_error_if_exists(config)
+      return unless File.exist?(config.path)
+      raise CreateError, <<~ERROR.chomp
+        Create failed! The config already exists: #{config.path}
+      ERROR
+    end
+
     module ClassMethods
       include Loader::ClassMethods
 
@@ -57,6 +64,7 @@ module FlightConfig
 
       def create(*a, &b)
         new(*a).tap do |config|
+          Updater.create_error_if_exists(config)
           Updater.update_config(config, &b)
         end
       end
