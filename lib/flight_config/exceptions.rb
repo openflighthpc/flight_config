@@ -26,40 +26,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'flight_config/exceptions'
-require 'flight_config/loader'
-
-
 module FlightConfig
-  module Updater
-    include Core
-
-    def self.included(base)
-      base.extend(ClassMethods)
-    end
-
-    def self.update_config(config)
-      Core.read(config)
-      if block_given?
-        yield config
-        Core.write(config)
-      end
-    end
-
-    module ClassMethods
-      include Loader::ClassMethods
-
-      def update(*a, &b)
-        new(*a).tap do |config|
-          Updater.update_config(config, &b)
-        end
-      end
-
-      def create(*a, &b)
-        new(*a).tap do |config|
-          Updater.update_config(config, &b)
-        end
-      end
-    end
-  end
+  class FlightConfigError < StandardError; end
+  class CreateError < FlightConfigError; end
 end
