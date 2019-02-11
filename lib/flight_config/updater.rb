@@ -72,7 +72,11 @@ module FlightConfig
       def delete(*a, &b)
         new(*a).tap do |config|
           Core.read(config)
-          FileUtils.rm_f(config.path) if (yield config)
+          if yield config
+            FileUtils.rm_f(config.path)
+          else
+            Core.write(config)
+          end
         end
       end
     end
