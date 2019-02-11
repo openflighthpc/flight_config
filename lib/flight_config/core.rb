@@ -44,13 +44,16 @@ module FlightConfig
       obj.__data__.write(obj.path, force: true)
     end
 
-    def self.lock(obj)
+    def self.lock(obj, shared: false)
       placeholder = false
       unless File.exists?(obj.path)
         placeholder = true
         File.write(obj.path, PLACEHOLDER)
       end
-      yield
+      File.open(obj.path) do |f|
+        f.flock(shared ? File::LOCK_SH : File::LOCK_EX)
+        yield if block_given?
+      end
     ensure
       if placeholder && File.read(obj.path) == PLACEHOLDER
         FileUtils.rm_f(obj.path)
