@@ -51,7 +51,13 @@ module FlightConfig
         File.write(obj.path, PLACEHOLDER)
       end
       File.open(obj.path) do |f|
-        f.flock(shared ? File::LOCK_SH : File::LOCK_EX)
+        begin
+          f.flock(shared ? File::LOCK_SH : File::LOCK_EX)
+        rescue Errno::EBADF
+          # It's highly likely that this will be run on a system that doesn't
+          # support `flock`. In this case just catch the error
+          # :noop:
+        end
         yield if block_given?
       end
     ensure
