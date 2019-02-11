@@ -32,7 +32,9 @@ module FlightConfig
   module Core
     def self.read(obj)
       return unless File.exists?(obj.path)
-      obj.__data__.read(obj.path)
+      data = YAML.load(File.read(obj.path))
+      return if data.nil?
+      obj.__data__.merge(data)
     end
 
     def self.write(obj)
