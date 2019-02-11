@@ -39,7 +39,7 @@ module FlightConfig
     end
 
     def self.update_config(config)
-      Core.lock do
+      Core.lock(config) do
         Core.read(config)
         yield config
         Core.write(config)
@@ -71,7 +71,7 @@ module FlightConfig
 
       def delete(*a, &b)
         new(*a).tap do |config|
-          Core.lock do
+          Core.lock(config) do
             Core.read(config)
             if yield config
               FileUtils.rm_f(config.path)

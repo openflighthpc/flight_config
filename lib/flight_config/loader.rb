@@ -40,10 +40,12 @@ module FlightConfig
     end
 
     module ClassMethods
-      def load(*a)
-        new(*a).tap { |c| Core.lock(c) { Core.read(c) } }
+      def read(*a)
+        new(*a).tap do |config|
+          Core.lock(config) { Core.read(config) } if File.exists?(config.path)
+        end
       end
-      alias_method :read, :load
+      alias_method :load, :read
     end
   end
   Reader = Loader

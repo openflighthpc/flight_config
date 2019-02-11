@@ -29,7 +29,7 @@ require 'flight_config/patches/tty_config'
 
 module FlightConfig
   module Core
-    PLACEHOLDER = '__flight_config_placeholder__: true'
+    PLACEHOLDER = '__flight_config_placeholder__'
 
     def self.read(obj)
       return unless File.exists?(obj.path)
@@ -49,7 +49,6 @@ module FlightConfig
       unless File.exists?(obj.path)
         placeholder = true
         File.write(obj.path, PLACEHOLDER)
-        puts obj.path
       end
       yield
     ensure
