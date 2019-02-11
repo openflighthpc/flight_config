@@ -29,9 +29,12 @@ require 'flight_config/patches/tty_config'
 
 module FlightConfig
   module Core
+    PLACEHOLDER = '__flight_config_placeholder__: true'
+
     def self.read(obj)
       return unless File.exists?(obj.path)
-      data = YAML.load(File.read(obj.path))
+      str = File.read(obj.path)
+      data = (str == PLACEHOLDER ? nil : YAML.load(str))
       return if data.nil?
       obj.__data__.merge(data)
     end
@@ -39,6 +42,20 @@ module FlightConfig
     def self.write(obj)
       FileUtils.mkdir_p(File.dirname(obj.path))
       obj.__data__.write(obj.path, force: true)
+    end
+
+    def self.lock(obj)
+      placeholder = false
+      unless File.exists?(obj.path)
+        placeholder = true
+        File.write(obj.path, PLACEHOLDER)
+        puts obj.path
+      end
+      yield
+    ensure
+      if placeholder && File.read(obj.path) == PLACEHOLDER
+        FileUtils.rm_f(obj.path)
+      end
     end
 
     def __data__

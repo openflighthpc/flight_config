@@ -39,9 +39,11 @@ module FlightConfig
     end
 
     def self.update_config(config)
-      Core.read(config)
-      yield config
-      Core.write(config)
+      Core.lock do
+        Core.read(config)
+        yield config
+        Core.write(config)
+      end
     end
 
     def self.create_error_if_exists(config)
@@ -69,11 +71,13 @@ module FlightConfig
 
       def delete(*a, &b)
         new(*a).tap do |config|
-          Core.read(config)
-          if yield config
-            FileUtils.rm_f(config.path)
-          else
-            Core.write(config)
+          Core.lock do
+            Core.read(config)
+            if yield config
+              FileUtils.rm_f(config.path)
+            else
+              Core.write(config)
+            end
           end
         end
       end

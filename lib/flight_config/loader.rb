@@ -41,7 +41,7 @@ module FlightConfig
 
     module ClassMethods
       def load(*a)
-        new(*a).tap { |c| Core.read(c) }
+        new(*a).tap { |c| Core.lock(c) { Core.read(c) } }
       end
       alias_method :read, :load
     end
