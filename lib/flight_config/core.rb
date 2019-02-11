@@ -1,4 +1,3 @@
-#
 # Copyright (c) 2019 Steve Norledge, Alces Flight
 # All rights reserved.
 #

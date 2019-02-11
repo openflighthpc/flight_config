@@ -40,10 +40,8 @@ module FlightConfig
 
     def self.update_config(config)
       Core.read(config)
-      if block_given?
-        yield config
-        Core.write(config)
-      end
+      yield config
+      Core.write(config)
     end
 
     def self.create_error_if_exists(config)
