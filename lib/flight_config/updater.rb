@@ -68,6 +68,13 @@ module FlightConfig
           Updater.update_config(config, &b)
         end
       end
+
+      def delete(*a, &b)
+        new(*a).tap do |config|
+          Core.read(config)
+          FileUtils.rm_f(config.path) if (yield config)
+        end
+      end
     end
   end
 end
