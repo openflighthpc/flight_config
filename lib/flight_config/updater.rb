@@ -38,12 +38,14 @@ module FlightConfig
       base.extend(ClassMethods)
     end
 
-    def self.update_config(config)
+    def self.update_config(config, action:)
+      Core.log(obj, action)
       Core.lock(config) do
         Core.read(config)
         yield config
         Core.write(config)
       end
+      Core.log(obj, "#{action} (done)")
     end
 
     def self.create_error_if_exists(config)
@@ -58,25 +60,29 @@ module FlightConfig
 
       def update(*a, &b)
         new(*a).tap do |config|
-          Updater.update_config(config, &b)
+          Updater.update_config(config, action: 'update', &b)
         end
       end
 
       def create(*a, &b)
         new(*a).tap do |config|
           Updater.create_error_if_exists(config)
-          Updater.update_config(config, &b)
+          Updater.update_config(config, action: 'create', &b)
         end
       end
 
       def delete(*a, &b)
         new(*a).tap do |config|
+          Core.log(obj, 'delete')
           Core.lock(config) do
             Core.read(config)
             if yield config
               FileUtils.rm_f(config.path)
+              Core.log(obj, 'delete (success)')
             else
+              Core.log(obj, 'delete (failed)')
               Core.write(config)
+              Core.log(obj, 'saved')
             end
           end
         end
