@@ -25,7 +25,9 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+require 'flight_config/exceptions'
 require 'flight_config/patches/tty_config'
+require 'timeout'
 
 module FlightConfig
   module Core
@@ -52,7 +54,11 @@ module FlightConfig
       end
       begin
         io = File.open(obj.path, 'r+')
-        io.flock(shared ? File::LOCK_SH : File::LOCK_EX)
+        Timeout.timeout(0.1) do
+          io.flock(shared ? File::LOCK_SH : File::LOCK_EX)
+        end
+      rescue Timeout::Error
+        raise ResourceBusy, "The following resource is busy: #{obj.path}"
       rescue Errno::EROFS
         # Catch read only errors as these files do not need locking
         # :noop:
