@@ -32,7 +32,6 @@ module FlightConfig
     PLACEHOLDER = '__flight_config_placeholder__'
 
     def self.read(obj)
-      return unless File.exists?(obj.path)
       str = File.read(obj.path)
       data = (str == PLACEHOLDER ? nil : YAML.load(str))
       return if data.nil?
