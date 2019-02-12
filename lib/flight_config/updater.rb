@@ -43,6 +43,7 @@ module FlightConfig
       Core.lock(config) do
         Core.read(config)
         yield config
+        Core.log(config, "#{action} (write)")
         Core.write(config)
       end
       Core.log(config, "#{action} (done)")
