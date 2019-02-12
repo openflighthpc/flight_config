@@ -42,7 +42,9 @@ module FlightConfig
     module ClassMethods
       def read(*a)
         new(*a).tap do |config|
-          Core.lock(config) { Core.read(config) } if File.exists?(config.path)
+          if File.exists?(config.path)
+            Core.lock(config, shared: true) { Core.read(config) }
+          end
         end
       end
       alias_method :load, :read
