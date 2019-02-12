@@ -46,21 +46,21 @@ module FlightConfig
 
     def self.lock(obj, shared: false)
       placeholder = false
+      io = nil
       unless File.exists?(obj.path)
         placeholder = true
         File.write(obj.path, PLACEHOLDER)
       end
-      File.open(obj.path) do |f|
-        begin
-          f.flock(shared ? File::LOCK_SH : File::LOCK_EX)
-        rescue Errno::EBADF
-          # It's highly likely that this will be run on a system that doesn't
-          # support `flock`. In this case just catch the error
-          # :noop:
-        end
-        yield if block_given?
+      begin
+        io = File.open(obj.path, 'r+')
+        io.flock(shared ? File::LOCK_SH : File::LOCK_EX)
+      rescue Errno::EROFS
+        # Catch read only errors as these files do not need locking
+        # :noop:
       end
+      yield if block_given?
     ensure
+      io&.close
       if placeholder && File.read(obj.path) == PLACEHOLDER
         FileUtils.rm_f(obj.path)
       end
