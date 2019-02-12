@@ -39,13 +39,13 @@ module FlightConfig
     end
 
     def self.update_config(config, action:)
-      Core.log(obj, action)
+      Core.log(config, action)
       Core.lock(config) do
         Core.read(config)
         yield config
         Core.write(config)
       end
-      Core.log(obj, "#{action} (done)")
+      Core.log(config, "#{action} (done)")
     end
 
     def self.create_error_if_exists(config)
@@ -73,16 +73,16 @@ module FlightConfig
 
       def delete(*a, &b)
         new(*a).tap do |config|
-          Core.log(obj, 'delete')
+          Core.log(config, 'delete')
           Core.lock(config) do
             Core.read(config)
             if yield config
               FileUtils.rm_f(config.path)
-              Core.log(obj, 'delete (success)')
+              Core.log(config, 'delete (success)')
             else
-              Core.log(obj, 'delete (failed)')
+              Core.log(config, 'delete (failed)')
               Core.write(config)
-              Core.log(obj, 'saved')
+              Core.log(config, 'saved')
             end
           end
         end

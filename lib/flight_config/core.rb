@@ -54,6 +54,7 @@ module FlightConfig
       placeholder = false
       io = nil
       unless File.exists?(obj.path)
+        Core.log(obj, 'placeholder (created)')
         placeholder = true
         File.write(obj.path, PLACEHOLDER)
       end
@@ -73,6 +74,7 @@ module FlightConfig
       io&.close
       if placeholder && File.read(obj.path) == PLACEHOLDER
         FileUtils.rm_f(obj.path)
+        Core.log(obj, 'placeholder (removed)')
       end
     end
 
