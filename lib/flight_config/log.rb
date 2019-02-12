@@ -1,3 +1,4 @@
+#
 # Copyright (c) 2019 Steve Norledge, Alces Flight
 # All rights reserved.
 #
@@ -25,63 +26,32 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'flight_config/exceptions'
-require 'flight_config/log'
-require 'flight_config/patches/tty_config'
-require 'timeout'
+require 'logger'
 
 module FlightConfig
-  module Core
-    PLACEHOLDER = '__flight_config_placeholder__'
+  class << self
+    attr_accessor :logger
 
-    def self.log(obj, action)
-      Log.info "#{action}: #{obj.path}"
+    def logger
+      @logger ||= Logger.new('/dev/null')
     end
+  end
 
-    def self.read(obj)
-      str = File.read(obj.path)
-      data = (str == PLACEHOLDER ? nil : YAML.load(str))
-      return if data.nil?
-      obj.__data__.merge(data)
-    end
-
-    def self.write(obj)
-      FileUtils.mkdir_p(File.dirname(obj.path))
-      obj.__data__.write(obj.path, force: true)
-    end
-
-    def self.lock(obj, shared: false)
-      placeholder = false
-      io = nil
-      unless File.exists?(obj.path)
-        placeholder = true
-        File.write(obj.path, PLACEHOLDER)
-      end
-      begin
-        io = File.open(obj.path, 'r+')
-        Timeout.timeout(0.1) do
-          io.flock(shared ? File::LOCK_SH : File::LOCK_EX)
-        end
-      rescue Timeout::Error
-        raise ResourceBusy, "The following resource is busy: #{obj.path}"
-      rescue Errno::EROFS
-        # Catch read only errors as these files do not need locking
-        # :noop:
-      end
-      yield if block_given?
-    ensure
-      io&.close
-      if placeholder && File.read(obj.path) == PLACEHOLDER
-        FileUtils.rm_f(obj.path)
+  module Log
+    def self.method_missing(s, *a, &b)
+      status = respond_to_missing?(s)
+      if status == :log_method
+        FlightConfig.logger.send(s, *a, &b)
+      else
+        super
       end
     end
 
-    def __data__
-      @__data__ ||= TTY::Config.new
-    end
-
-    def path
-      raise NotImplementedError
+    def self.respond_to_missing?(s)
+      return :log_method if FlightConfig.logger.respond_to?(s)
+      super
     end
   end
 end
+
+
