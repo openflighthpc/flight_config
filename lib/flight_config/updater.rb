@@ -56,6 +56,13 @@ module FlightConfig
       ERROR
     end
 
+    def self.delete_error_if_missing(config)
+      return if File.exist?(config.path)
+      raise DeleteError, <<~ERROR.chomp
+        Delete failed! The config does not exist: #{config.path}
+      ERROR
+    end
+
     module ClassMethods
       include Loader::ClassMethods
 
@@ -74,16 +81,17 @@ module FlightConfig
 
       def delete(*a, &b)
         new(*a).tap do |config|
+          Updater.delete_error_if_missing(config)
           Core.log(config, 'delete')
           Core.lock(config) do
             Core.read(config)
             if yield config
               FileUtils.rm_f(config.path)
-              Core.log(config, 'delete (success)')
+              Core.log(config, 'delete (done)')
             else
               Core.log(config, 'delete (failed)')
               Core.write(config)
-              Core.log(config, 'saved')
+              Core.log(config, 'delete (saved)')
             end
           end
         end
