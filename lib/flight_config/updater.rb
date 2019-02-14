@@ -27,7 +27,7 @@
 #
 
 require 'flight_config/exceptions'
-require 'flight_config/loader'
+require 'flight_config/reader'
 
 
 module FlightConfig
@@ -64,7 +64,7 @@ module FlightConfig
     end
 
     module ClassMethods
-      include Loader::ClassMethods
+      include Reader::ClassMethods
 
       def update(*a, &b)
         new(*a).tap do |config|

@@ -28,11 +28,8 @@
 
 require 'flight_config/core'
 
-# NOTE: The `Loader` is going to be renamed `Reader` at some point, this will
-# allow dependent application to make the switch smoothly
-
 module FlightConfig
-  module Loader
+  module Reader
     include Core
 
     def self.included(base)
@@ -53,6 +50,6 @@ module FlightConfig
       alias_method :load, :read
     end
   end
-  Reader = Loader
+  Loader = Reader
 end
 
