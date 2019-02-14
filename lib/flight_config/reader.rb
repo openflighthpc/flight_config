@@ -37,13 +37,23 @@ module FlightConfig
     end
 
     module ClassMethods
+      def allow_missing_read(fetch: false)
+        if fetch
+          @allow_missing_read ||= false
+        else
+          @allow_missing_read = true
+        end
+      end
+
       def read(*a)
         new(*a).tap do |config|
           if File.exists?(config.path)
             Core.log(config, 'read')
             Core.read(config)
-          else
+          elsif allow_missing_read(fetch: true)
             Core.log(config, 'read (missing)')
+          else
+            raise MissingFile, "The file does not exist: #{config.path}"
           end
         end
       end
