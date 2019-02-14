@@ -41,7 +41,7 @@ module FlightConfig
         new(*a).tap do |config|
           if File.exists?(config.path)
             Core.log(config, 'read')
-            Core.lock(config, shared: true) { Core.read(config) }
+            Core.read(config)
           else
             Core.log(config, 'read (missing)')
           end

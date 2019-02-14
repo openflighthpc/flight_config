@@ -50,7 +50,7 @@ module FlightConfig
       obj.__data__.write(obj.path, force: true)
     end
 
-    def self.lock(obj, shared: false)
+    def self.lock(obj)
       placeholder = false
       io = nil
       unless File.exists?(obj.path)
@@ -60,14 +60,9 @@ module FlightConfig
       end
       begin
         io = File.open(obj.path, 'r+')
-        Timeout.timeout(0.1) do
-          io.flock(shared ? File::LOCK_SH : File::LOCK_EX)
-        end
+        Timeout.timeout(0.1) { io.flock(File::LOCK_EX) }
       rescue Timeout::Error
         raise ResourceBusy, "The following resource is busy: #{obj.path}"
-      rescue Errno::EROFS
-        # Catch read only errors as these files do not need locking
-        # :noop:
       end
       yield if block_given?
     ensure
