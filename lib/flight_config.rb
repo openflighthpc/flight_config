@@ -27,6 +27,7 @@
 #
 
 require "flight_config/version"
+require 'flight_config/deleter'
 require 'flight_config/log'
 require 'flight_config/reader'
 require 'flight_config/updater'

@@ -27,47 +27,37 @@
 #
 
 require 'flight_config/exceptions'
-require 'flight_config/reader'
+require 'flight_config/core'
 
 module FlightConfig
-  module Updater
-    include Core
-
+  module Deleter
     def self.included(base)
       base.extend(ClassMethods)
     end
 
-    def self.update_config(config, action:)
-      Core.log(config, action)
-      Core.lock(config) do
-        Core.read(config)
-        yield config
-        Core.log(config, "#{action} (write)")
-        Core.write(config)
-      end
-      Core.log(config, "#{action} (done)")
-    end
-
-    def self.create_error_if_exists(config)
-      return unless File.exist?(config.path)
-      raise CreateError, <<~ERROR.chomp
-        Create failed! The config already exists: #{config.path}
+    def self.delete_error_if_missing(config)
+      return if File.exist?(config.path)
+      raise DeleteError, <<~ERROR.chomp
+        Delete failed! The config does not exist: #{config.path}
       ERROR
     end
 
     module ClassMethods
-      include Reader::ClassMethods
-
-      def update(*a, &b)
+      def delete(*a, &b)
         new(*a).tap do |config|
-          Updater.update_config(config, action: 'update', &b)
-        end
-      end
-
-      def create(*a, &b)
-        new(*a).tap do |config|
-          Updater.create_error_if_exists(config)
-          Updater.update_config(config, action: 'create', &b)
+          Deleter.delete_error_if_missing(config)
+          Core.log(config, 'delete')
+          Core.lock(config) do
+            Core.read(config)
+            if yield config
+              FileUtils.rm_f(config.path)
+              Core.log(config, 'delete (done)')
+            else
+              Core.log(config, 'delete (failed)')
+              Core.write(config)
+              Core.log(config, 'delete (saved)')
+            end
+          end
         end
       end
     end
