@@ -55,6 +55,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_runtime_dependency 'ice_nine'
   spec.add_runtime_dependency 'tty-config'
 
   spec.add_development_dependency "bundler", "~> 1.16"

@@ -59,13 +59,13 @@ module FlightConfig
       include Reader::ClassMethods
 
       def update(*a, &b)
-        new(*a).tap do |config|
+        frozen_new(*a) do |config|
           Updater.update_config(config, action: 'update', &b)
         end
       end
 
       def create(*a, &b)
-        new(*a).tap do |config|
+        frozen_new(*a) do |config|
           Updater.create_error_if_exists(config)
           Updater.update_config(config, action: 'create', &b)
         end

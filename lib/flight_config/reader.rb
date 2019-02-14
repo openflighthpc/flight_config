@@ -27,6 +27,7 @@
 #
 
 require 'flight_config/core'
+require 'ice_nine'
 
 module FlightConfig
   module Reader
@@ -37,6 +38,12 @@ module FlightConfig
     end
 
     module ClassMethods
+      def frozen_new(*a)
+        config = new(*a)
+        yield config if block_given?
+        IceNine.deep_freeze(config)
+      end
+
       def allow_missing_read(fetch: false)
         if fetch
           @allow_missing_read ||= false
@@ -46,7 +53,7 @@ module FlightConfig
       end
 
       def read(*a)
-        new(*a).tap do |config|
+        frozen_new(*a) do |config|
           if File.exists?(config.path)
             Core.log(config, 'read')
             Core.read(config)

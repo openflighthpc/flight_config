@@ -44,7 +44,7 @@ module FlightConfig
 
     module ClassMethods
       def delete(*a, &b)
-        new(*a).tap do |config|
+        frozen_new(*a) do |config|
           Deleter.delete_error_if_missing(config)
           Core.log(config, 'delete')
           Core.lock(config) do
