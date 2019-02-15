@@ -33,8 +33,7 @@ require 'tempfile'
 RSpec.describe FlightConfig::Core do
   let(:subject_path) { raise NotImplementedError }
   let(:temp_file_input) { [['rspec_flight_config', '.yaml'], '/tmp'] }
-
-  subject do
+  let(:subject_class) do
     klass = described_class
     Class.new do
       include klass
@@ -44,12 +43,10 @@ RSpec.describe FlightConfig::Core do
       def initialize(path)
         @path = path
       end
-
-      def data
-        __data__.fetch(:data)
-      end
-    end.new(subject_path)
+    end
   end
+
+  subject { subject_class.new(subject_path) }
 
   shared_context 'with an existing subject' do
     let!(:subject_file) do
@@ -66,6 +63,8 @@ RSpec.describe FlightConfig::Core do
   end
 
   shared_context 'with a non existant subject' do
+    # As the object doesn't exist, the inital data is always nil
+    let(:initial_subject_data) { nil }
     let(:subject_path) do
       file = Tempfile.new(*temp_file_input)
       path = file.path
@@ -102,7 +101,7 @@ RSpec.describe FlightConfig::Core do
         let(:initial_subject_data) { { key: 'value' } }
 
         it 'loads in the existing data' do
-          expect(subject.data).to eq(initial_subject_data)
+          expect(subject.__data__.fetch(:data)).to eq(initial_subject_data)
         end
       end
     end
@@ -110,10 +109,33 @@ RSpec.describe FlightConfig::Core do
 
   describe '::write' do
     shared_examples 'a standard write' do
-      before { described_class.write(subject) }
+      let(:new_subject_data) { nil }
 
-      it 'writes the file' do
-        expect(File.exists?(subject.path)).to be_truthy
+      before do
+        subject.__data__.set(:data, value: new_subject_data) if new_subject_data
+        described_class.write(subject)
+      end
+
+      context 'without new data' do
+        it 'writes the file' do
+          expect(File.exists?(subject.path)).to be_truthy
+        end
+
+        it 'does not alter the subject data' do
+          new_subject = subject_class.new(subject.path)
+          described_class.read(new_subject)
+          expect(new_subject.__data__.fetch(:data)).to eq(initial_subject_data)
+        end
+      end
+
+      context 'with new data' do
+        let(:new_subject_data) { { "key" => 'new-value' } }
+
+        it 'preforms a persistant save' do
+          new_subject = subject_class.new(subject.path)
+          described_class.read(new_subject)
+          expect(new_subject.__data__.fetch(:data)).to eq(new_subject_data)
+        end
       end
     end
 
