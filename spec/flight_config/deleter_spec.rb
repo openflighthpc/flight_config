@@ -65,6 +65,12 @@ RSpec.describe FlightConfig::Deleter do
         end
         expect(config_class.read(config.path).data).to eq(new_data)
       end
+
+      context 'with existing data' do
+        let(:initial_subject_data) { { "key" => 'value' } }
+
+        it_loads_initial_subject_data
+      end
     end
   end
 end
