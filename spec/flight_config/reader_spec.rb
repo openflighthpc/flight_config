@@ -50,9 +50,19 @@ RSpec.describe FlightConfig::Reader do
           expect { subject }.not_to raise_error
         end
 
-        it 'loads an empty hash equivalent config' do
-          expect(subject.__data__.to_h).to be_empty
-        end
+        it_loads_empty_subject_config
+      end
+    end
+
+    context 'with an existing file' do
+      with_existing_subject_file
+
+      it_loads_empty_subject_config
+
+      context 'with existing data' do
+        let(:initial_subject_data) { { "key" => 'value' } }
+
+        it_loads_initial_subject_data
       end
     end
   end

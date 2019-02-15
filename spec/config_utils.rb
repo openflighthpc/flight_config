@@ -51,6 +51,19 @@ RSpec.shared_context 'with config utils' do
     after { FileUtils.rm_f subject_path }
   end
 
+  def self.it_loads_empty_subject_config
+    it 'loads an empty hash equivalent TTY::Config object' do
+      expect(subject.__data__).to be_a(TTY::Config)
+      expect(subject.__data__.to_h).to be_empty
+    end
+  end
+
+  def self.it_loads_initial_subject_data
+    it 'loads in the existing data' do
+      expect(subject.__data__.fetch(:data)).to eq(initial_subject_data)
+    end
+  end
+
   let(:include_classes) { [described_class] }
 
   let(:temp_file_input) { [['rspec_flight_config', '.yaml'], '/tmp'] }

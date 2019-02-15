@@ -51,17 +51,12 @@ RSpec.describe FlightConfig::Core do
 
       before { described_class.read(subject) }
 
-      it 'loads an empty hash equivalent TTY::Config object' do
-        expect(subject.__data__).to be_a(TTY::Config)
-        expect(subject.__data__.to_h).to be_empty
-      end
+      it_loads_empty_subject_config
 
       context 'with existing hash data' do
         let(:initial_subject_data) { { key: 'value' } }
 
-        it 'loads in the existing data' do
-          expect(subject.__data__.fetch(:data)).to eq(initial_subject_data)
-        end
+        it_loads_initial_subject_data
       end
     end
   end
