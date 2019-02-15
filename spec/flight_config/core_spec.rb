@@ -65,6 +65,28 @@ RSpec.describe FlightConfig::Core do
     after { FileUtils.rm_f subject_path }
   end
 
+  describe '::read' do
+    context 'without an existing file' do
+      include_context 'with a non existant subject'
+
+      it 'errors' do
+        expect do
+          described_class.read(subject)
+        end.to raise_error(Errno::ENOENT)
+      end
+    end
+
+    context 'with an existing file' do
+      include_context 'with an existing subject'
+
+      it 'loads an empty hash equivalent TTY::Config object' do
+        described_class.read(subject)
+        expect(subject.__data__).to be_a(TTY::Config)
+        expect(subject.__data__.to_h).to be_empty
+      end
+    end
+  end
+
   describe '::lock' do
     shared_examples 'standard file lock' do
       it 'locks the file' do

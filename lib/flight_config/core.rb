@@ -41,7 +41,7 @@ module FlightConfig
     def self.read(obj)
       str = File.read(obj.path)
       data = (str == PLACEHOLDER ? nil : YAML.load(str))
-      return if data.nil?
+      return unless data
       obj.__data__.merge(data)
     end
 
