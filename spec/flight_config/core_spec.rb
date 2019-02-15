@@ -28,17 +28,54 @@
 
 require 'flight_config/core'
 
-RSpec.describe FlightConfig::Core do
-  subject do
-    Class.new do
-      include described_class
+require 'tempfile'
 
-      def path
-        '/tmp/test-path'
+RSpec.describe FlightConfig::Core do
+  let(:subject_path) { raise NotImplementedError }
+
+  subject do
+    klass = described_class
+    Class.new do
+      include klass
+
+      attr_reader :path
+
+      def initialize(path)
+        @path = path
       end
-    end
+    end.new(subject_path)
   end
 
+  shared_context 'with an existing subject' do
+    let!(:subject_file) { Tempfile.create('rspec_flight_config', '/tmp') }
+    let(:subject_path) { subject_file.path }
+
+    after { File.unlink(subject_file) }
+  end
+
+
   describe '::lock' do
+    context 'with an existing file' do
+      include_context 'with an existing subject'
+
+      it 'locks the file' do
+        described_class.lock(subject) do
+          File.open(subject.path, 'r+') do |file|
+            expect(file.flock(File::LOCK_EX | File::LOCK_NB)).to be_falsey
+          end
+        end
+      end
+
+      it 'throws a resource busy error if already locked' do
+        Timeout.timeout(1) do
+          File.open(subject.path, 'r+') do |file|
+            file.flock(File::LOCK_SH)
+            expect do
+              described_class.lock(subject)
+            end.to raise_error(FlightConfig::ResourceBusy)
+          end
+        end
+      end
+    end
   end
 end
