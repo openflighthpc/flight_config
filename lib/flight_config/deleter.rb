@@ -49,7 +49,7 @@ module FlightConfig
           Core.log(config, 'delete')
           Core.lock(config) do
             Core.read(config)
-            if yield config
+            if b.nil? || (yield config)
               FileUtils.rm_f(config.path)
               Core.log(config, 'delete (done)')
             else

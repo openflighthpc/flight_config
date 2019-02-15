@@ -36,7 +36,13 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
     end
     let(:subject_path) { subject_file.path }
 
-    after { File.unlink(subject_file) }
+    after do
+      begin
+        File.unlink(subject_file)
+      rescue Errno::ENOENT
+        # :noop: The file has already been deleted
+      end
+    end
   end
 
   def self.with_missing_subject_file

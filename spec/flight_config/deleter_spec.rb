@@ -41,6 +41,17 @@ RSpec.describe FlightConfig::Deleter do
 
       it_raises_missing_file
     end
+
+    context 'with an existing file' do
+      with_existing_subject_file
+
+      it_freezes_the_subject_data
+      it_locks_the_file(:delete)
+
+      it 'removes the file' do
+        expect(File.exists?(subject.path)).to be_falsey
+      end
+    end
   end
 end
 
