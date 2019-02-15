@@ -53,11 +53,7 @@ RSpec.describe FlightConfig::Core do
 
       it_loads_empty_subject_config
 
-      context 'with existing hash data' do
-        let(:initial_subject_data) { { key: 'value' } }
-
-        it_loads_initial_subject_data
-      end
+      it_behaves_like_initial_subject_data_reader
     end
   end
 

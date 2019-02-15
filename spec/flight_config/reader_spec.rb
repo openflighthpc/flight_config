@@ -60,18 +60,14 @@ RSpec.describe FlightConfig::Reader do
       it_loads_empty_subject_config
       it_freezes_the_subject_data
 
+      it_behaves_like_initial_subject_data_reader
+
       it 'ignores the file lock' do
         FlightConfig::Core.lock(subject) do
           expect do
             Timeout.timeout(1) { read_subject }
           end.not_to raise_error
         end
-      end
-
-      context 'with existing data' do
-        let(:initial_subject_data) { { "key" => 'value' } }
-
-        it_loads_initial_subject_data
       end
     end
   end

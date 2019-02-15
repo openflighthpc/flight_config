@@ -64,9 +64,13 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
     end
   end
 
-  def self.it_loads_initial_subject_data
-    it 'loads in the existing data' do
-      expect(subject.__data__.fetch(:data)).to eq(initial_subject_data)
+  def self.it_behaves_like_initial_subject_data_reader
+    context 'with initial_subject_data' do
+      let(:initial_subject_data) { { 'key' => 'value' } }
+
+      it 'loads in the existing data' do
+        expect(subject.__data__.fetch(:data)).to eq(initial_subject_data)
+      end
     end
   end
 
