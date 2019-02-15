@@ -32,6 +32,7 @@ require 'tempfile'
 
 RSpec.describe FlightConfig::Core do
   let(:subject_path) { raise NotImplementedError }
+  let(:temp_file_input) { [['rspec_flight_config', '.yaml'], '/tmp'] }
 
   subject do
     klass = described_class
@@ -43,25 +44,30 @@ RSpec.describe FlightConfig::Core do
       def initialize(path)
         @path = path
       end
+
+      def data
+        __data__.fetch(:data)
+      end
     end.new(subject_path)
   end
 
   shared_context 'with an existing subject' do
     let!(:subject_file) do
-      Tempfile.create('rspec_flight_config', '/tmp').tap do |file|
-        file.write(YAML.dump(subject_data)) unless subject_data.nil?
+      Tempfile.create(*temp_file_input).tap do |file|
+        file.write(YAML.dump(initial_data_hash)) unless initial_subject_data.nil?
         file.flush
       end
     end
     let(:subject_path) { subject_file.path }
-    let(:subject_data) { nil }
+    let(:initial_subject_data) { nil }
+    let(:initial_data_hash) { { data: initial_subject_data } }
 
     after { File.unlink(subject_file) }
   end
 
   shared_context 'with a non existant subject' do
     let(:subject_path) do
-      file = Tempfile.new('rspec_flight_config', '/tmp')
+      file = Tempfile.new(*temp_file_input)
       path = file.path
       file.close
       file.unlink
@@ -93,12 +99,28 @@ RSpec.describe FlightConfig::Core do
       end
 
       context 'with existing hash data' do
-        let(:subject_data) { { key: 'value' } }
+        let(:initial_subject_data) { { key: 'value' } }
 
         it 'loads in the existing data' do
-          expect(subject.__data__.to_h).to eq(subject_data)
+          expect(subject.data).to eq(initial_subject_data)
         end
       end
+    end
+  end
+
+  describe '::write' do
+    shared_examples 'a standard write' do
+      before { described_class.write(subject) }
+
+      it 'writes the file' do
+        expect(File.exists?(subject.path)).to be_truthy
+      end
+    end
+
+    context 'without an existing file' do
+      include_context 'with a non existant subject'
+
+      it_behaves_like 'a standard write'
     end
   end
 
