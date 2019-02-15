@@ -56,6 +56,7 @@ module FlightConfig
       unless File.exists?(obj.path)
         Core.log(obj, 'placeholder')
         placeholder = true
+        FileUtils.mkdir_p(File.dirname(obj.path))
         File.write(obj.path, PLACEHOLDER)
       end
       begin
