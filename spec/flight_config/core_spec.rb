@@ -116,15 +116,15 @@ RSpec.describe FlightConfig::Core do
         described_class.write(subject)
       end
 
-      context 'without new data' do
-        it 'writes the file' do
+      context 'without reading existing or saving new data' do
+        it 'results in an existing file' do
           expect(File.exists?(subject.path)).to be_truthy
         end
 
-        it 'does not alter the subject data' do
+        it 'saves the object as empty data' do
           new_subject = subject_class.new(subject.path)
           described_class.read(new_subject)
-          expect(new_subject.__data__.fetch(:data)).to eq(initial_subject_data)
+          expect(new_subject.__data__.fetch(:data)).to eq(nil)
         end
       end
 
@@ -141,6 +141,13 @@ RSpec.describe FlightConfig::Core do
 
     context 'without an existing file' do
       include_context 'with a non existant subject'
+
+      it_behaves_like 'a standard write'
+    end
+
+    context 'with existing data' do
+      include_context 'with an existing subject'
+      let(:initial_subject_data) { { "initial_key" => 'initial value' } }
 
       it_behaves_like 'a standard write'
     end
