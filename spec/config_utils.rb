@@ -26,7 +26,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-RSpec.shared_context 'with config utils' do
+RSpec.shared_context 'with config utils' do |*additional_includes|
   def self.with_existing_subject_file
     let!(:subject_file) do
       Tempfile.create(*temp_file_input).tap do |file|
@@ -80,12 +80,16 @@ RSpec.shared_context 'with config utils' do
     end
   end
 
-  let(:include_classes) { [described_class] }
+  def self.it_raises_missing_file
+    it 'raises MissingFile' do
+      expect { subject }.to raise_error(FlightConfig::MissingFile)
+    end
+  end
 
   let(:temp_file_input) { [['rspec_flight_config', '.yaml'], '/tmp'] }
 
   let(:config_class) do
-    classes = include_classes
+    classes = [*additional_includes, described_class].flatten
     Class.new do
       classes.each { |c| include c }
 

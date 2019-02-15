@@ -37,7 +37,7 @@ module FlightConfig
 
     def self.delete_error_if_missing(config)
       return if File.exist?(config.path)
-      raise DeleteError, <<~ERROR.chomp
+      raise MissingFile, <<~ERROR.chomp
         Delete failed! The config does not exist: #{config.path}
       ERROR
     end

@@ -26,53 +26,21 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'flight_config/reader'
+RSpec.describe FlightConfig::Deleter do
+  include_context 'with config utils', FlightConfig::Reader
 
-RSpec.describe FlightConfig::Reader do
-  include_context 'with config utils'
-
-  describe '::read' do
-    def read_subject
-      config_class.read(subject_path)
+  describe '::delete' do
+    def delete_config(&b)
+      config_class.delete(subject_path, &b)
     end
 
-    subject { read_subject }
+    subject { delete_config }
 
     context 'without an existing file' do
       with_missing_subject_file
 
       it_raises_missing_file
-
-      context 'with allow_missing_read' do
-        before { config_class.allow_missing_read }
-
-        it 'does not error' do
-          expect { subject }.not_to raise_error
-        end
-
-        it_loads_empty_subject_config
-      end
-    end
-
-    context 'with an existing file' do
-      with_existing_subject_file
-
-      it_loads_empty_subject_config
-      it_freezes_the_subject_data
-
-      it 'ignores the file lock' do
-        FlightConfig::Core.lock(subject) do
-          expect do
-            Timeout.timeout(1) { read_subject }
-          end.not_to raise_error
-        end
-      end
-
-      context 'with existing data' do
-        let(:initial_subject_data) { { "key" => 'value' } }
-
-        it_loads_initial_subject_data
-      end
     end
   end
 end
+
