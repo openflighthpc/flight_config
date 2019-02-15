@@ -26,49 +26,38 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'flight_config/exceptions'
-require 'flight_config/reader'
+RSpec.describe FlightConfig::Updater do
+  include_context 'with config utils'
 
-module FlightConfig
-  module Updater
-    include Core
-
-    def self.included(base)
-      base.extend(ClassMethods)
+  describe '::create' do
+    def create_config(&b)
+      config_class.create(subject_path, &b)
     end
 
-    def self.update_config(config, action:)
-      Core.log(config, action)
-      Core.lock(config) do
-        Core.read(config)
-        yield config if block_given?
-        Core.log(config, "#{action} (write)")
-        Core.write(config)
+    subject { create_config }
+
+    context 'with an existing config' do
+      with_existing_subject_file
+
+      it 'errors' do
+        expect { create_config }.to raise_error(FlightConfig::CreateError)
       end
-      Core.log(config, "#{action} (done)")
     end
 
-    def self.create_error_if_exists(config)
-      return unless File.exist?(config.path)
-      raise CreateError, <<~ERROR.chomp
-        Create failed! The config already exists: #{config.path}
-      ERROR
-    end
+    context 'without an existing config' do
+      with_missing_subject_file
 
-    module ClassMethods
-      include Reader::ClassMethods
+      it_locks_the_file(:create)
+      it_freezes_the_subject_data
 
-      def update(*a, &b)
-        protected_new(*a) do |config|
-          Updater.update_config(config, action: 'update', &b)
-        end
+      it 'creates the file' do
+        expect(File.exists?(subject.path)).to be_truthy
       end
 
-      def create(*a, &b)
-        protected_new(*a) do |config|
-          Updater.create_error_if_exists(config)
-          Updater.update_config(config, action: 'create', &b)
-        end
+      it 'updates the config' do
+        str = 'new configuration'
+        new_config = create_config { |c| c.data = str }
+        expect(config_class.read(new_config.path).data).to eq(str)
       end
     end
   end

@@ -70,6 +70,16 @@ RSpec.shared_context 'with config utils' do
     end
   end
 
+  def self.it_locks_the_file(method)
+    it 'runs the block in a file lock' do
+      config_class.public_send(method, subject_path) do |config|
+        File.open(config.path, 'r+') do |file|
+          expect(file.flock(File::LOCK_EX|File::LOCK_NB)).to be_falsey
+        end
+      end
+    end
+  end
+
   let(:include_classes) { [described_class] }
 
   let(:temp_file_input) { [['rspec_flight_config', '.yaml'], '/tmp'] }
@@ -83,6 +93,14 @@ RSpec.shared_context 'with config utils' do
 
       def initialize(path)
         @path = path
+      end
+
+      def data=(input)
+        __data__.set(:data, value: input)
+      end
+
+      def data
+        __data__.fetch(:data)
       end
     end
   end
