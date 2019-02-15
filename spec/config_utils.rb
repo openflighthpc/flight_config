@@ -64,6 +64,12 @@ RSpec.shared_context 'with config utils' do
     end
   end
 
+  def self.it_freezes_the_subject_data
+    it 'freezes the __data__ core' do
+      expect(subject.__data__).to be_frozen
+    end
+  end
+
   let(:include_classes) { [described_class] }
 
   let(:temp_file_input) { [['rspec_flight_config', '.yaml'], '/tmp'] }

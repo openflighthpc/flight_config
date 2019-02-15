@@ -62,6 +62,7 @@ RSpec.describe FlightConfig::Reader do
       with_existing_subject_file
 
       it_loads_empty_subject_config
+      it_freezes_the_subject_data
 
       it 'ignores the file lock' do
         FlightConfig::Core.lock(subject) do
