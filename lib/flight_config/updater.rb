@@ -64,6 +64,8 @@ module FlightConfig
         end
       end
 
+      alias :create_or_update :update
+
       def create(*a, &b)
         new!(*a) do |config|
           Updater.create_error_if_exists(config)

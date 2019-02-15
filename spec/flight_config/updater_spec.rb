@@ -29,6 +29,23 @@
 RSpec.describe FlightConfig::Updater do
   include_context 'with config utils'
 
+  shared_examples 'modifier method' do |method|
+    it_locks_the_file(method)
+    it_freezes_the_subject_data
+
+    it 'guarantees the file exists' do
+      expect(File.exist?(subject.path)).to be_truthy
+    end
+
+    it 'updates the config' do
+      str = 'new configuration value'
+      config = config_class.public_send(method, subject_path) do |c|
+        c.data = str
+      end
+      expect(config_class.read(config.path).data).to eq(str)
+    end
+  end
+
   describe '::create' do
     def create_config(&b)
       config_class.create(subject_path, &b)
@@ -47,18 +64,27 @@ RSpec.describe FlightConfig::Updater do
     context 'without an existing config' do
       with_missing_subject_file
 
-      it_locks_the_file(:create)
-      it_freezes_the_subject_data
+      it_behaves_like 'modifier method', :create
+    end
+  end
 
-      it 'creates the file' do
-        expect(File.exists?(subject.path)).to be_truthy
-      end
+  describe '::create_or_update' do
+    def create_or_update_config(&b)
+      config_class.create_or_update(subject_path, &b)
+    end
 
-      it 'updates the config' do
-        str = 'new configuration'
-        new_config = create_config { |c| c.data = str }
-        expect(config_class.read(new_config.path).data).to eq(str)
-      end
+    subject { create_or_update_config }
+
+    context 'without an existing config' do
+      with_missing_subject_file
+
+      it_behaves_like 'modifier method', :create_or_update
+    end
+
+    context 'with an existing config' do
+      with_existing_subject_file
+
+      it_behaves_like 'modifier method', :create_or_update
     end
   end
 end
