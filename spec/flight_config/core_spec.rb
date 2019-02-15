@@ -30,23 +30,14 @@ require 'flight_config/core'
 
 require 'tempfile'
 
+require 'config_utils'
+
 RSpec.describe FlightConfig::Core do
-  let(:subject_path) { raise NotImplementedError }
+  include_context 'with config utils'
+
   let(:temp_file_input) { [['rspec_flight_config', '.yaml'], '/tmp'] }
-  let(:subject_class) do
-    klass = described_class
-    Class.new do
-      include klass
 
-      attr_reader :path
-
-      def initialize(path)
-        @path = path
-      end
-    end
-  end
-
-  subject { subject_class.new(subject_path) }
+  subject { config_class.new(subject_path) }
 
   shared_context 'with an existing subject' do
     let!(:subject_file) do
@@ -56,15 +47,11 @@ RSpec.describe FlightConfig::Core do
       end
     end
     let(:subject_path) { subject_file.path }
-    let(:initial_subject_data) { nil }
-    let(:initial_data_hash) { { data: initial_subject_data } }
 
     after { File.unlink(subject_file) }
   end
 
   shared_context 'with a non existant subject' do
-    # As the object doesn't exist, the inital data is always nil
-    let(:initial_subject_data) { nil }
     let(:subject_path) do
       file = Tempfile.new(*temp_file_input)
       path = file.path
@@ -122,7 +109,7 @@ RSpec.describe FlightConfig::Core do
         end
 
         it 'saves the object as empty data' do
-          new_subject = subject_class.new(subject.path)
+          new_subject = config_class.new(subject.path)
           described_class.read(new_subject)
           expect(new_subject.__data__.fetch(:data)).to eq(nil)
         end
@@ -132,7 +119,7 @@ RSpec.describe FlightConfig::Core do
         let(:new_subject_data) { { "key" => 'new-value' } }
 
         it 'preforms a persistant save' do
-          new_subject = subject_class.new(subject.path)
+          new_subject = config_class.new(subject.path)
           described_class.read(new_subject)
           expect(new_subject.__data__.fetch(:data)).to eq(new_subject_data)
         end
