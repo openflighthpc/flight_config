@@ -26,53 +26,34 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-RSpec.shared_context 'with config utils' do
-  def self.with_existing_subject_file
-    let!(:subject_file) do
-      Tempfile.create(*temp_file_input).tap do |file|
-        file.write(YAML.dump(initial_data_hash)) unless initial_subject_data.nil?
-        file.flush
+require 'flight_config/reader'
+
+RSpec.describe FlightConfig::Reader do
+  include_context 'with config utils'
+
+  describe '::read' do
+    subject { config_class.read(subject_path) }
+
+    context 'without an existing file' do
+      with_missing_subject_file
+
+      it 'errors' do
+        expect do
+          subject
+        end.to raise_error(FlightConfig::MissingFile)
       end
-    end
-    let(:subject_path) { subject_file.path }
 
-    after { File.unlink(subject_file) }
-  end
+      context 'with allow_missing_read' do
+        before { config_class.allow_missing_read }
 
-  def self.with_missing_subject_file
-    let(:subject_path) do
-      file = Tempfile.new(*temp_file_input)
-      path = file.path
-      file.close
-      file.unlink
-      path
-    end
+        it 'does not error' do
+          expect { subject }.not_to raise_error
+        end
 
-    after { FileUtils.rm_f subject_path }
-  end
-
-  let(:include_classes) { [described_class] }
-
-  let(:temp_file_input) { [['rspec_flight_config', '.yaml'], '/tmp'] }
-
-  let(:config_class) do
-    classes = include_classes
-    Class.new do
-      classes.each { |c| include c }
-
-      attr_reader :path
-
-      def initialize(path)
-        @path = path
+        it 'loads an empty hash equivalent config' do
+          expect(subject.__data__.to_h).to be_empty
+        end
       end
     end
   end
-
-  let(:subject_path) do
-    raise NotImplementedError
-  end
-
-  let(:initial_subject_data) { nil }
-
-  let(:initial_data_hash) { { "data" => initial_subject_data } }
 end

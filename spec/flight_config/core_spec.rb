@@ -30,12 +30,8 @@ require 'flight_config/core'
 
 require 'tempfile'
 
-require 'config_utils'
-
 RSpec.describe FlightConfig::Core do
   include_context 'with config utils'
-
-  let(:temp_file_input) { [['rspec_flight_config', '.yaml'], '/tmp'] }
 
   subject { config_class.new(subject_path) }
 
