@@ -27,6 +27,30 @@
 #
 
 RSpec.shared_context 'with config utils' do
+  def self.with_existing_subject_file
+    let!(:subject_file) do
+      Tempfile.create(*temp_file_input).tap do |file|
+        file.write(YAML.dump(initial_data_hash)) unless initial_subject_data.nil?
+        file.flush
+      end
+    end
+    let(:subject_path) { subject_file.path }
+
+    after { File.unlink(subject_file) }
+  end
+
+  def self.with_missing_subject_file
+    let(:subject_path) do
+      file = Tempfile.new(*temp_file_input)
+      path = file.path
+      file.close
+      file.unlink
+      path
+    end
+
+    after { FileUtils.rm_f subject_path }
+  end
+
   let(:include_classes) { [described_class] }
 
   let(:config_class) do

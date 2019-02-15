@@ -39,33 +39,9 @@ RSpec.describe FlightConfig::Core do
 
   subject { config_class.new(subject_path) }
 
-  shared_context 'with an existing subject' do
-    let!(:subject_file) do
-      Tempfile.create(*temp_file_input).tap do |file|
-        file.write(YAML.dump(initial_data_hash)) unless initial_subject_data.nil?
-        file.flush
-      end
-    end
-    let(:subject_path) { subject_file.path }
-
-    after { File.unlink(subject_file) }
-  end
-
-  shared_context 'with a non existant subject' do
-    let(:subject_path) do
-      file = Tempfile.new(*temp_file_input)
-      path = file.path
-      file.close
-      file.unlink
-      path
-    end
-
-    after { FileUtils.rm_f subject_path }
-  end
-
   describe '::read' do
     context 'without an existing file' do
-      include_context 'with a non existant subject'
+      with_missing_subject_file
 
       it 'errors' do
         expect do
@@ -75,7 +51,7 @@ RSpec.describe FlightConfig::Core do
     end
 
     context 'with an existing file' do
-      include_context 'with an existing subject'
+      with_existing_subject_file
 
       before { described_class.read(subject) }
 
@@ -127,13 +103,13 @@ RSpec.describe FlightConfig::Core do
     end
 
     context 'without an existing file' do
-      include_context 'with a non existant subject'
+      with_missing_subject_file
 
       it_behaves_like 'a standard write'
     end
 
     context 'with existing data' do
-      include_context 'with an existing subject'
+      with_existing_subject_file
       let(:initial_subject_data) { { "initial_key" => 'initial value' } }
 
       it_behaves_like 'a standard write'
@@ -152,7 +128,7 @@ RSpec.describe FlightConfig::Core do
     end
 
     context 'with an existing file' do
-      include_context 'with an existing subject'
+      with_existing_subject_file
 
       it_behaves_like 'standard file lock'
 
@@ -169,7 +145,7 @@ RSpec.describe FlightConfig::Core do
     end
 
     context 'without an existing file' do
-      include_context 'with a non existant subject'
+      with_missing_subject_file
 
       it_behaves_like 'standard file lock'
 
