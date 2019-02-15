@@ -37,7 +37,7 @@ module FlightConfig
       base.extend(ClassMethods)
     end
 
-    def self.update_config(config, action:)
+    def self.create_or_update(config, action:)
       Core.log(config, action)
       Core.lock(config) do
         Core.read(config)
@@ -55,21 +55,33 @@ module FlightConfig
       ERROR
     end
 
+    def self.update_error_if_missing(config)
+      return if File.exists?(config.path)
+      raise MissingFile, <<~ERROR.chomp
+        Update failed! The config does not exist: #{config.path}
+      ERROR
+    end
+
     module ClassMethods
       include Reader::ClassMethods
 
       def update(*a, &b)
         new!(*a) do |config|
-          Updater.update_config(config, action: 'update', &b)
+          Updater.update_error_if_missing(config)
+          Updater.create_or_update(config, action: 'update', &b)
         end
       end
 
-      alias :create_or_update :update
+      def create_or_update(*a, &b)
+        new!(*a) do |config|
+          Updater.create_or_update(config, action: 'create_or_update', &b)
+        end
+      end
 
       def create(*a, &b)
         new!(*a) do |config|
           Updater.create_error_if_exists(config)
-          Updater.update_config(config, action: 'create', &b)
+          Updater.create_or_update(config, action: 'create', &b)
         end
       end
     end

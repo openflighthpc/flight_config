@@ -87,4 +87,24 @@ RSpec.describe FlightConfig::Updater do
       it_behaves_like 'modifier method', :create_or_update
     end
   end
+
+  describe '::update' do
+    def update_config(&b)
+      config_class.update(subject_path, &b)
+    end
+
+    subject { update_config }
+
+    context 'without an existing config' do
+      with_missing_subject_file
+
+      it_raises_missing_file
+    end
+
+    context 'with an existing config' do
+      with_existing_subject_file
+
+      it_behaves_like 'modifier method', :update
+    end
+  end
 end
