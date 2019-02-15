@@ -28,6 +28,9 @@
 
 require "bundler/setup"
 require "flight_config"
+require 'pp'
+require 'pry'
+require 'pry-byebug'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

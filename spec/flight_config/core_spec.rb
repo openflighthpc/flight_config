@@ -47,8 +47,14 @@ RSpec.describe FlightConfig::Core do
   end
 
   shared_context 'with an existing subject' do
-    let!(:subject_file) { Tempfile.create('rspec_flight_config', '/tmp') }
+    let!(:subject_file) do
+      Tempfile.create('rspec_flight_config', '/tmp').tap do |file|
+        file.write(YAML.dump(subject_data)) unless subject_data.nil?
+        file.flush
+      end
+    end
     let(:subject_path) { subject_file.path }
+    let(:subject_data) { nil }
 
     after { File.unlink(subject_file) }
   end
@@ -79,10 +85,19 @@ RSpec.describe FlightConfig::Core do
     context 'with an existing file' do
       include_context 'with an existing subject'
 
+      before { described_class.read(subject) }
+
       it 'loads an empty hash equivalent TTY::Config object' do
-        described_class.read(subject)
         expect(subject.__data__).to be_a(TTY::Config)
         expect(subject.__data__.to_h).to be_empty
+      end
+
+      context 'with existing hash data' do
+        let(:subject_data) { { key: 'value' } }
+
+        it 'loads in the existing data' do
+          expect(subject.__data__.to_h).to eq(subject_data)
+        end
       end
     end
   end
