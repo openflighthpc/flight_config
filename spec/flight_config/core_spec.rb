@@ -53,11 +53,20 @@ RSpec.describe FlightConfig::Core do
     after { File.unlink(subject_file) }
   end
 
+  shared_context 'with a non existant subject' do
+    let(:subject_path) do
+      file = Tempfile.new('rspec_flight_config', '/tmp')
+      path = file.path
+      file.close
+      file.unlink
+      path
+    end
+
+    after { FileUtils.rm_f subject_path }
+  end
 
   describe '::lock' do
-    context 'with an existing file' do
-      include_context 'with an existing subject'
-
+    shared_examples 'standard file lock' do
       it 'locks the file' do
         described_class.lock(subject) do
           File.open(subject.path, 'r+') do |file|
@@ -65,6 +74,12 @@ RSpec.describe FlightConfig::Core do
           end
         end
       end
+    end
+
+    context 'with an existing file' do
+      include_context 'with an existing subject'
+
+      it_behaves_like 'standard file lock'
 
       it 'throws a resource busy error if already locked' do
         Timeout.timeout(1) do
@@ -75,6 +90,17 @@ RSpec.describe FlightConfig::Core do
             end.to raise_error(FlightConfig::ResourceBusy)
           end
         end
+      end
+    end
+
+    context 'without an existing file' do
+      include_context 'with a non existant subject'
+
+      it_behaves_like 'standard file lock'
+
+      it 'deletes the file automatically' do
+        described_class.lock(subject)
+        expect(File.exists?(subject.path)).to be_falsey
       end
     end
   end
