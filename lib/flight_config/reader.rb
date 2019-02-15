@@ -38,7 +38,7 @@ module FlightConfig
     end
 
     module ClassMethods
-      def protected_new(*a)
+      def new!(*a)
         new(*a).tap do |config|
           yield config if block_given?
           IceNine.deep_freeze(config.__data__)
@@ -54,7 +54,7 @@ module FlightConfig
       end
 
       def read(*a)
-        protected_new(*a) do |config|
+        new!(*a) do |config|
           if File.exists?(config.path)
             Core.log(config, 'read')
             Core.read(config)
