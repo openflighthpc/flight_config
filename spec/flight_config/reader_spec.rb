@@ -32,7 +32,11 @@ RSpec.describe FlightConfig::Reader do
   include_context 'with config utils'
 
   describe '::read' do
-    subject { config_class.read(subject_path) }
+    def read_subject
+      config_class.read(subject_path)
+    end
+
+    subject { read_subject }
 
     context 'without an existing file' do
       with_missing_subject_file
@@ -58,6 +62,14 @@ RSpec.describe FlightConfig::Reader do
       with_existing_subject_file
 
       it_loads_empty_subject_config
+
+      it 'ignores the file lock' do
+        FlightConfig::Core.lock(subject) do
+          expect do
+            Timeout.timeout(1) { read_subject }
+          end.not_to raise_error
+        end
+      end
 
       context 'with existing data' do
         let(:initial_subject_data) { { "key" => 'value' } }
