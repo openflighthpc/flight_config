@@ -51,6 +51,20 @@ RSpec.describe FlightConfig::Deleter do
       it 'removes the file' do
         expect(File.exists?(subject.path)).to be_falsey
       end
+
+      it 'removes the file for truthy blocks' do
+        config = delete_config { true }
+        expect(File.exists?(config.path)).to be_falsey
+      end
+
+      it 'updates the config if the block returns false' do
+        new_data = 'data added in delete'
+        config = delete_config do |c|
+          c.data = new_data
+          false
+        end
+        expect(config_class.read(config.path).data).to eq(new_data)
+      end
     end
   end
 end

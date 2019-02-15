@@ -43,19 +43,19 @@ module FlightConfig
     end
 
     module ClassMethods
-      def delete(*a, &b)
+      def delete(*a)
         new!(*a) do |config|
           Deleter.delete_error_if_missing(config)
           Core.log(config, 'delete')
           Core.lock(config) do
             Core.read(config)
-            if b.nil? || (yield config)
-              FileUtils.rm_f(config.path)
-              Core.log(config, 'delete (done)')
-            else
+            if block_given? && !(yield config)
               Core.log(config, 'delete (failed)')
               Core.write(config)
               Core.log(config, 'delete (saved)')
+            else
+              FileUtils.rm_f(config.path)
+              Core.log(config, 'delete (done)')
             end
           end
         end
