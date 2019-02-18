@@ -39,6 +39,11 @@ RSpec.configure do |config|
     def include_fakefs
       require 'fakefs/spec_helpers'
       include FakeFS::SpecHelpers
+
+      before do
+        FakeFS::FileSystem.clone(FlightConfig.default_log_path)
+        allow_any_instance_of(FakeFS::File).to receive(:flock)
+      end
     end
   end
 

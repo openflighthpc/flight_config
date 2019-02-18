@@ -30,15 +30,42 @@ require 'flight_config/reader'
 
 module FlightConfig
   module Globber
+    class Matcher
+      attr_reader :klass, :arity
+
+      def initialize(klass, arity)
+        @klass = klass
+        @arity = arity
+      end
+
+      def keys
+        @keys ||= Array.new(arity) { |i| "arg#{i}" }
+      end
+
+      def regex
+        @regex ||= begin
+          regex_inputs = keys.map { |k|  "(?<#{k}>.*)" }
+          /#{klass.new(*regex_inputs).path}/
+        end
+      end
+
+      def read(path)
+        data = regex.match(path)
+        init_args = keys.map { |key| data[key] }
+        klass.read(*init_args)
+      end
+    end
+
     def self.included(base)
       base.extend(ClassMethods)
     end
 
     module ClassMethods
       def glob_read(*a)
+        matcher = Globber::Matcher.new(self, a.length)
         glob_regex = self.new(*a).path
         Dir.glob(glob_regex)
-           .map { |_path| new() }
+           .map { |path| matcher.read(path) }
       end
     end
   end

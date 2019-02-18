@@ -79,6 +79,10 @@ RSpec.describe FlightConfig::Globber do
         it 'returns objects of the correct type' do
           expect(subject.first.class).to eq(glob_class)
         end
+
+        it 'resolves the arguments correctly' do
+          expect(subject.first.args).to eq(name_args)
+        end
       end
     end
 

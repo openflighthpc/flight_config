@@ -32,8 +32,12 @@ module FlightConfig
   class << self
     attr_accessor :logger
 
+    def default_log_path
+      '/tmp/flight_config.log'
+    end
+
     def logger
-      @logger ||= Logger.new('/dev/null')
+      @logger ||= Logger.new(FlightConfig.default_log_path)
     end
   end
 
