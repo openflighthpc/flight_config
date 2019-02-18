@@ -27,7 +27,6 @@
 #
 
 require 'flight_config/core'
-require 'ice_nine'
 
 module FlightConfig
   module Reader
@@ -41,7 +40,6 @@ module FlightConfig
       def new!(*a)
         new(*a).tap do |config|
           yield config if block_given?
-          IceNine.deep_freeze(config.__data__)
         end
       end
 

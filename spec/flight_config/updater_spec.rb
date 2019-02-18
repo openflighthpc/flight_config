@@ -31,7 +31,6 @@ RSpec.describe FlightConfig::Updater do
 
   shared_examples 'modifier method' do |method|
     it_locks_the_file(method)
-    it_freezes_the_subject_data
 
     it 'guarantees the file exists' do
       expect(File.exist?(subject.path)).to be_truthy

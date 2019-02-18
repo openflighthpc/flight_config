@@ -45,7 +45,6 @@ RSpec.describe FlightConfig::Deleter do
     context 'with an existing file' do
       with_existing_subject_file
 
-      it_freezes_the_subject_data
       it_locks_the_file(:delete)
 
       it 'removes the file' do

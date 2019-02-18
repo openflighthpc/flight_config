@@ -74,12 +74,6 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
     end
   end
 
-  def self.it_freezes_the_subject_data
-    it 'freezes the __data__ core' do
-      expect(subject.__data__).to be_frozen
-    end
-  end
-
   def self.it_locks_the_file(method)
     it 'runs the block in a file lock' do
       config_class.public_send(method, subject_path) do |config|
