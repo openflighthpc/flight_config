@@ -35,10 +35,11 @@ RSpec.describe FlightConfig::Globber do
       include FlightConfig::Reader
       include nodule
 
-      attr_reader :path
+      attr_reader :path, :args
 
-      def initialize(*a)
-        parts = a.map { |arg| "var/#{arg}" }
+      def initialize(*args)
+        @args = args
+        parts = args.map { |arg| "var/#{arg}" }
         @path = File.join('/tmp', *parts, 'etc/config.yaml')
       end
     end
@@ -73,6 +74,10 @@ RSpec.describe FlightConfig::Globber do
 
         it 'finds a single config' do
           expect(subject.length).to be(1)
+        end
+
+        it 'returns objects of the correct type' do
+          expect(subject.first.class).to eq(glob_class)
         end
       end
     end

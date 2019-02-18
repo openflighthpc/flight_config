@@ -38,6 +38,7 @@ module FlightConfig
       def glob_read(*a)
         glob_regex = self.new(*a).path
         Dir.glob(glob_regex)
+           .map { |_path| new() }
       end
     end
   end
