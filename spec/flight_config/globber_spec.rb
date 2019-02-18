@@ -47,34 +47,44 @@ RSpec.describe FlightConfig::Globber do
   describe '::glob_read' do
     include_fakefs
 
-    shared_examples 'with arity' do |num_inputs|
-      let(:input_args) { Array.new(num_inputs, nil) }
+    shared_examples 'with variable initializer' do
+      let(:input_args) { Array.new(num_inputs, '*') }
       subject { glob_class.glob_read(*input_args) }
 
-      context "when initialized with #{num_inputs} input(s)" do
-        context 'without any existing configs' do
-          it 'returns an empty array' do
-            expect(subject).to eq([])
-          end
+      context 'without any existing configs' do
+        it 'returns an empty array' do
+          expect(subject).to eq([])
+        end
+      end
+
+      context 'with a single existing configs' do
+        let(:name) { 'first-test-config' }
+        let(:name_args) do
+          args = Array.new(num_inputs) { |i| "arg#{i}" }
+          args[-1] = name
+          args
         end
 
-        context 'with a single existing configs' do
-          let(:name) { 'first-test-config' }
+        before do
+          path = glob_class.new(*name_args).path
+          FileUtils.mkdir_p(File.dirname(path))
+          FileUtils.touch(path)
+        end
 
-          before do
-            path = glob_class.new(name).path
-            FileUtils.mkdir_p(File.dirname(path))
-            FileUtils.touch(path)
-          end
-
-          xit 'finds a single config' do
-            expect(subject.length).to be(1)
-          end
+        it 'finds a single config' do
+          expect(subject.length).to be(1)
         end
       end
     end
 
-    include_examples 'with arity', 1
-    include_examples 'with arity', 3
+    context 'with a single input initializer' do
+      let(:num_inputs) { 1 }
+      include_examples 'with variable initializer'
+    end
+
+    context 'with a single input initializer' do
+      let(:num_inputs) { 3 }
+      include_examples 'with variable initializer'
+    end
   end
 end
