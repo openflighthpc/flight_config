@@ -66,6 +66,10 @@ module FlightConfig
         end
       end
       alias_method :load, :read
+
+      def glob_read(*a)
+        []
+      end
     end
   end
   Loader = Reader
