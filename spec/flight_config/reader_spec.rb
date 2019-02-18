@@ -27,11 +27,12 @@
 #
 
 require 'flight_config/reader'
+require 'flight_config/globber_spec'
 
 RSpec.describe FlightConfig::Reader do
-  include_context 'with config utils'
-
   describe '::read' do
+    include_context 'with config utils'
+
     def read_subject
       config_class.read(subject_path)
     end
@@ -72,3 +73,4 @@ RSpec.describe FlightConfig::Reader do
     end
   end
 end
+

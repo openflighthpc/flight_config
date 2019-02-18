@@ -26,42 +26,48 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require "bundler/setup"
-require "flight_config"
-require 'pp'
-require 'pry'
-require 'pry-byebug'
+require 'flight_config/reader'
 
-require 'config_utils'
+module FlightConfig
+  module Globber
+    class Matcher
+      attr_reader :klass, :arity
 
-RSpec.configure do |config|
-  module FakeFSUtils
-    def include_fakefs
-      require 'fakefs/spec_helpers'
-      include FakeFS::SpecHelpers
+      def initialize(klass, arity)
+        @klass = klass
+        @arity = arity
+      end
 
-      before do
-        FakeFS::FileSystem.clone(FlightConfig.default_log_path)
-        allow_any_instance_of(FakeFS::File).to receive(:flock)
+      def keys
+        @keys ||= Array.new(arity) { |i| "arg#{i}" }
+      end
+
+      def regex
+        @regex ||= begin
+          regex_inputs = keys.map { |k|  "(?<#{k}>.*)" }
+          /#{klass.new(*regex_inputs).path}/
+        end
+      end
+
+      def read(path)
+        data = regex.match(path)
+        init_args = keys.map { |key| data[key] }
+        klass.read(*init_args)
+      end
+    end
+
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+
+    module ClassMethods
+      def glob_read(*a)
+        matcher = Globber::Matcher.new(self, a.length)
+        glob_regex = self.new(*a).path
+        Dir.glob(glob_regex)
+           .map { |path| matcher.read(path) }
       end
     end
   end
-
-  config.extend FakeFSUtils
-
-  # Enable flags like --only-failures and --next-failure
-  config.example_status_persistence_file_path = ".rspec_status"
-
-  # Disable RSpec exposing methods globally on `Module` and `main`
-  config.disable_monkey_patching!
-
-  # Run specs in random order to surface order dependencies. If you find an
-  # order dependency and want to debug it, you can fix the order by providing
-  # the seed, which is printed after each run.
-  #     --seed 1234
-  config.order = :random
-
-  config.expect_with :rspec do |c|
-    c.syntax = :expect
-  end
 end
+
