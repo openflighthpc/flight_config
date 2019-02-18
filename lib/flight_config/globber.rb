@@ -26,48 +26,20 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'flight_config/core'
-require 'ice_nine'
+require 'flight_config/reader'
 
 module FlightConfig
-  module Reader
-    include Core
-
+  module Globber
     def self.included(base)
       base.extend(ClassMethods)
     end
 
     module ClassMethods
-      def new!(*a)
-        new(*a).tap do |config|
-          yield config if block_given?
-          IceNine.deep_freeze(config.__data__)
-        end
+      def glob_read(*a)
+        []
       end
-
-      def allow_missing_read(fetch: false)
-        if fetch
-          @allow_missing_read ||= false
-        else
-          @allow_missing_read = true
-        end
-      end
-
-      def read(*a)
-        new!(*a) do |config|
-          if File.exists?(config.path)
-            Core.log(config, 'read')
-            Core.read(config)
-          elsif allow_missing_read(fetch: true)
-            Core.log(config, 'read (missing)')
-          else
-            raise MissingFile, "The file does not exist: #{config.path}"
-          end
-        end
-      end
-      alias_method :load, :read
     end
   end
-  Loader = Reader
 end
+
 

@@ -26,48 +26,55 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'flight_config/core'
-require 'ice_nine'
+require 'flight_config/globber'
 
-module FlightConfig
-  module Reader
-    include Core
+RSpec.describe FlightConfig::Globber do
+  let(:glob_class) do
+    nodule = described_class
+    Class.new do
+      include FlightConfig::Reader
+      include nodule
 
-    def self.included(base)
-      base.extend(ClassMethods)
+      attr_reader :path
+
+      def initialize(*a)
+        parts = a.map { |arg| "var/#{arg}" }
+        @path = File.join('/tmp', *parts, 'etc/config.yaml')
+      end
     end
+  end
 
-    module ClassMethods
-      def new!(*a)
-        new(*a).tap do |config|
-          yield config if block_given?
-          IceNine.deep_freeze(config.__data__)
+  describe '::glob_read' do
+    include_fakefs
+
+    shared_examples 'with arity' do |num_inputs|
+      let(:input_args) { Array.new(num_inputs, nil) }
+      subject { glob_class.glob_read(*input_args) }
+
+      context "when initialized with #{num_inputs} input(s)" do
+        context 'without any existing configs' do
+          it 'returns an empty array' do
+            expect(subject).to eq([])
+          end
         end
-      end
 
-      def allow_missing_read(fetch: false)
-        if fetch
-          @allow_missing_read ||= false
-        else
-          @allow_missing_read = true
-        end
-      end
+        context 'with a single existing configs' do
+          let(:name) { 'first-test-config' }
 
-      def read(*a)
-        new!(*a) do |config|
-          if File.exists?(config.path)
-            Core.log(config, 'read')
-            Core.read(config)
-          elsif allow_missing_read(fetch: true)
-            Core.log(config, 'read (missing)')
-          else
-            raise MissingFile, "The file does not exist: #{config.path}"
+          before do
+            path = glob_class.new(name).path
+            FileUtils.mkdir_p(File.dirname(path))
+            FileUtils.touch(path)
+          end
+
+          xit 'finds a single config' do
+            expect(subject.length).to be(1)
           end
         end
       end
-      alias_method :load, :read
     end
-  end
-  Loader = Reader
-end
 
+    include_examples 'with arity', 1
+    include_examples 'with arity', 3
+  end
+end

@@ -27,6 +27,7 @@
 #
 
 require 'flight_config/reader'
+require 'flight_config/globber_spec'
 
 RSpec.describe FlightConfig::Reader do
   describe '::read' do
@@ -71,52 +72,5 @@ RSpec.describe FlightConfig::Reader do
       end
     end
   end
-
-  describe '::glob_read' do
-    include_fakefs
-
-    shared_examples 'with arity' do |num_inputs|
-      let(:input_args) { Array.new(num_inputs, nil) }
-      subject { glob_class.glob_read(*input_args) }
-
-      context "when initialized with #{num_inputs} input(s)" do
-        context 'without any existing configs' do
-          it 'returns an empty array' do
-            expect(subject).to eq([])
-          end
-        end
-
-        context 'with a single existing configs' do
-          let(:name) { 'first-test-config' }
-
-          before do
-            path = glob_class.new(name).path
-            FileUtils.mkdir_p(File.dirname(path))
-            FileUtils.touch(path)
-          end
-
-          xit 'finds a single config' do
-            expect(subject.length).to be(1)
-          end
-        end
-      end
-    end
-
-    let(:glob_class) do
-      nodule = described_class
-      Class.new do
-        include nodule
-
-        attr_reader :path
-
-        def initialize(*a)
-          parts = a.map { |arg| "var/#{arg}" }
-          @path = File.join('/tmp', *parts, 'etc/config.yaml')
-        end
-      end
-    end
-
-    include_examples 'with arity', 1
-    include_examples 'with arity', 3
-  end
 end
+
