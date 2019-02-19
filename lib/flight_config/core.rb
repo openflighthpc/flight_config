@@ -78,11 +78,16 @@ module FlightConfig
       @__mode__
     end
 
+    def __data__initialize(_tty_config)
+    end
+
     def __data__
-      @__data__ ||= if __mode__ == :read
-        raise NotImplementedError
-      else
-        TTY::Config.new
+      @__data__ ||= TTY::Config.new.tap do |core|
+        if __mode__ == :read
+          raise NotImplementedError
+        else
+          __data__initialize(core)
+        end
       end
     end
 
