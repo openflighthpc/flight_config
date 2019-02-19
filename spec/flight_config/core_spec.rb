@@ -181,6 +181,34 @@ RSpec.describe FlightConfig::Core do
 
       it_uses__data__initialize
       include_examples 'set read mode'
+
+      describe ':__data__read' do
+        context 'with nil data' do
+          before { subject.__data__read(subject.__data__) }
+
+          it 'is a empty data core' do
+            expect(subject.__data__.to_h).to be_empty
+          end
+        end
+
+        context 'with existing data' do
+          let(:initial_subject_data) { { 'super-random': 4561 } }
+          let(:input) { TTY::Config.new }
+
+          before do
+            subject.__data__
+            subject.__data__read(input)
+          end
+
+          it 'does not implicitly change __data__' do
+            expect(subject.__data__.to_h).to be_empty
+          end
+
+          it 'reads the data onto the input' do
+            expect(input.fetch(:data)).to eq(initial_subject_data)
+          end
+        end
+      end
     end
   end
 end

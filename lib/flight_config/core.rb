@@ -79,9 +79,14 @@ module FlightConfig
     def __data__initialize(_tty_config)
     end
 
-    def __data__read(_tty_config)
-      return if File.exists?(path)
-      raise MissingFile, "The file does not exist: #{path}"
+    def __data__read(tty_config)
+      if File.exists?(path)
+        yaml_h = YAML.load(File.read(path))
+        return unless yaml_h
+        tty_config.merge(yaml_h)
+      else
+        raise MissingFile, "The file does not exist: #{path}"
+      end
     end
 
     def __data__set_read_mode
