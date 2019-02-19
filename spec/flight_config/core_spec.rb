@@ -152,11 +152,23 @@ RSpec.describe FlightConfig::Core do
           end.to raise_error(FlightConfig::MissingFile)
         end
 
+        context 'with allow_missing_read' do
+          before do
+            config_class.class_exec { allow_missing_read }
+            subject.__data__read(subject.__data__)
+          end
+
+          it 'returns an empty object' do
+            expect(subject.__data__.to_h).to be_empty
+          end
+        end
+
         context 'with a lock' do
           it 'returns an empty object' do
             FlightConfig::Core.lock(subject) do
               subject.__data__read(subject.__data__)
             end
+            expect(subject.__data__.to_h).to be_empty
           end
         end
       end

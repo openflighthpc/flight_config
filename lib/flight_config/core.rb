@@ -34,6 +34,10 @@ module FlightConfig
   module Core
     PLACEHOLDER = '__flight_config_placeholder__'
 
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+
     def self.log(obj, action)
       Log.info "#{action}: #{obj.path}"
     end
@@ -78,12 +82,24 @@ module FlightConfig
     def __data__initialize(_tty_config)
     end
 
+    module ClassMethods
+      def allow_missing_read(fetch: false)
+        if fetch
+          @allow_missing_read ||= false
+        else
+          @allow_missing_read = true
+        end
+      end
+    end
+
     def __data__read(tty_config)
       if File.exists?(path)
         str = File.read(path)
         yaml_h = (str == Core::PLACEHOLDER ? nil : YAML.load(File.read(path)))
         return unless yaml_h
         tty_config.merge(yaml_h)
+      elsif self.class.allow_missing_read(fetch: true)
+        # :noop:
       else
         raise MissingFile, "The file does not exist: #{path}"
       end

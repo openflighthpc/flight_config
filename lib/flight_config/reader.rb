@@ -37,17 +37,11 @@ module FlightConfig
     end
 
     module ClassMethods
+      include Core::ClassMethods
+
       def new!(*a)
         new(*a).tap do |config|
           yield config if block_given?
-        end
-      end
-
-      def allow_missing_read(fetch: false)
-        if fetch
-          @allow_missing_read ||= false
-        else
-          @allow_missing_read = true
         end
       end
 
