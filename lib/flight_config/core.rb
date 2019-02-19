@@ -91,7 +91,7 @@ module FlightConfig
         end
       end
 
-      def new_config
+      def new__data__
         TTY::Config.new
       end
     end
@@ -121,7 +121,7 @@ module FlightConfig
     end
 
     def __data__
-      @__data__ ||= self.class.new_config.tap do |core|
+      @__data__ ||= self.class.new__data__.tap do |core|
         if __data__mode == :read
           __data__read(core)
         else
