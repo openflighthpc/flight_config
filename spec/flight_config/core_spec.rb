@@ -165,6 +165,15 @@ RSpec.describe FlightConfig::Core do
 
       it_uses__data__initialize
       include_examples 'set read mode'
+
+      describe ':__data__read' do
+        it 'raises MissingFile' do
+          subject
+          expect do
+            subject.__data__read(TTY::Config.new)
+          end.to raise_error(FlightConfig::MissingFile)
+        end
+      end
     end
 
     context 'with a config' do

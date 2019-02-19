@@ -80,6 +80,8 @@ module FlightConfig
     end
 
     def __data__read(_tty_config)
+      return if File.exists?(path)
+      raise MissingFile, "The file does not exist: #{path}"
     end
 
     def __data__set_read_mode
