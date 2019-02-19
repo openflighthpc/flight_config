@@ -28,6 +28,7 @@
 
 module FlightConfig
   class FlightConfigError < StandardError; end
+  class BadModeError < FlightConfigError; end
   class ResourceBusy < FlightConfigError; end
   class MissingFile < FlightConfigError; end
   class CreateError < FlightConfigError; end

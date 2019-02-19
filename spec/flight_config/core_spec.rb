@@ -144,16 +144,34 @@ RSpec.describe FlightConfig::Core do
   end
 
   describe '::new' do
+    shared_examples 'set read mode' do
+      describe '#__data__set_read_mode' do
+        it 'changes the __data__mode to :read' do
+          subject.__data__set_read_mode
+          expect(subject.__data__mode).to eq(:read)
+        end
+
+        it 'errors if __data__ has been set' do
+          subject.__data__
+          expect do
+            subject.__data__set_read_mode
+          end.to raise_error(FlightConfig::BadModeError)
+        end
+      end
+    end
+
     context 'without a config' do
       with_missing_subject_file
 
       it_uses__data__initialize
+      include_examples 'set read mode'
     end
 
     context 'with a config' do
       with_existing_subject_file
 
       it_uses__data__initialize
+      include_examples 'set read mode'
     end
   end
 end

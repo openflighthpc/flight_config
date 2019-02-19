@@ -74,14 +74,23 @@ module FlightConfig
       end
     end
 
-    def __data__mode
-      @__data__mode
-    end
+    attr_reader :__data__mode
 
     def __data__initialize(_tty_config)
     end
 
     def __data__read(_tty_config)
+    end
+
+    def __data__set_read_mode
+      # Do not call '__data__' directly as this skips the initialize block
+      if @__data__
+        raise BadModeError, <<~ERROR.chomp
+          The read mode can not be changed after __data__ has been set
+        ERROR
+      else
+        @__data__mode = :read
+      end
     end
 
     def __data__
