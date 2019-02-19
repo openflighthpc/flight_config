@@ -143,9 +143,15 @@ RSpec.describe FlightConfig::Core do
     end
   end
 
-  describe '#data_initializer' do
-    context 'when creating a new object' do
+  describe '::new' do
+    context 'without a config' do
       with_missing_subject_file
+
+      it_uses__data__initialize
+    end
+
+    context 'with a config' do
+      with_existing_subject_file
 
       it_uses__data__initialize
     end

@@ -66,7 +66,7 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
 
   def self.it_behaves_like_initial_subject_data_reader
     context 'with initial_subject_data' do
-      let(:initial_subject_data) { { 'key' => 'value' } }
+      let(:initial_subject_data) { { 'initial_key' => 'value' } }
 
       it 'loads in the existing data' do
         expect(subject.__data__.fetch(:data)).to eq(initial_subject_data)
@@ -93,6 +93,11 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
   def self.it_uses__data__initialize
     it 'uses TTY::Config initializer' do
       expect(subject).to receive(:__data__initialize).with(instance_of(TTY::Config))
+      subject.__data__
+    end
+
+    it 'does not uses __data__read' do
+      expect(subject).not_to receive(:__data__read)
       subject.__data__
     end
 
