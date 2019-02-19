@@ -90,6 +90,10 @@ module FlightConfig
           @allow_missing_read = true
         end
       end
+
+      def new_config
+        TTY::Config.new
+      end
     end
 
     def __data__read(tty_config)
@@ -117,7 +121,7 @@ module FlightConfig
     end
 
     def __data__
-      @__data__ ||= TTY::Config.new.tap do |core|
+      @__data__ ||= self.class.new_config.tap do |core|
         if __data__mode == :read
           __data__read(core)
         else
