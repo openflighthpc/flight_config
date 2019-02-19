@@ -40,7 +40,7 @@ module FlightConfig
     def self.create_or_update(config, action:)
       Core.log(config, action)
       Core.lock(config) do
-        Core.read(config)
+        config.__data__
         yield config if block_given?
         Core.log(config, "#{action} (write)")
         Core.write(config)
@@ -68,12 +68,14 @@ module FlightConfig
       def update(*a, &b)
         new!(*a) do |config|
           Updater.update_error_if_missing(config)
+          config.__data__set_read_mode
           Updater.create_or_update(config, action: 'update', &b)
         end
       end
 
       def create_or_update(*a, &b)
         new!(*a) do |config|
+          config.__data__set_read_mode if File.exists?(config.path)
           Updater.create_or_update(config, action: 'create_or_update', &b)
         end
       end

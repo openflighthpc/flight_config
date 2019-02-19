@@ -88,6 +88,8 @@ RSpec.describe FlightConfig::Updater do
       with_existing_subject_file
 
       it_behaves_like 'modifier method', :create_or_update
+
+      it_uses__data__read
     end
   end
 
@@ -108,6 +110,8 @@ RSpec.describe FlightConfig::Updater do
       with_existing_subject_file
 
       it_behaves_like 'modifier method', :update
+
+      it_uses__data__read
     end
   end
 end
