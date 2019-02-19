@@ -91,22 +91,55 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
   end
 
   def self.it_uses__data__initialize
-    it 'uses TTY::Config initializer' do
+    it 'uses __data__initialize' do
+      subject.instance_variable_set(:@__data__, nil)
       expect(subject).to receive(:__data__initialize).with(instance_of(TTY::Config))
       subject.__data__
     end
 
-    it 'does not uses __data__read' do
+    it 'does not use __data__read' do
+      subject.instance_variable_set(:@__data__, nil)
       expect(subject).not_to receive(:__data__read)
       subject.__data__
     end
 
     it 'can set a default useing the TTY::Config initializer' do
-      value = 'my-value'
+      value = '__data__initializer-value'
       config_class.define_method(:__data__initialize) do |config|
         config.set(:key, value: value)
       end
       expect(subject.__data__.fetch(:key)).to eq(value)
+    end
+  end
+
+  def self.it_uses__data__read
+    it 'uses __data__read' do
+      subject.instance_variable_set(:@__data__, nil)
+      expect(subject).to receive(:__data__read).with(instance_of(TTY::Config))
+      subject.__data__
+    end
+
+    it 'does not use __data__initialize' do
+      subject.instance_variable_set(:@__data__, nil)
+      expect(subject).not_to receive(:__data__initialize)
+      subject.__data__
+    end
+
+    context 'without any initial data' do
+      let(:initial_subject_data) { nil }
+
+      it 'loads an empty data core' do
+        subject.instance_variable_set(:@__data__, nil)
+        expect(subject.__data__.to_h).to be_empty
+      end
+    end
+
+    context 'with initial data' do
+      let(:initial_subject_data) { { 'data_read': 'it worked' } }
+
+      it 'loads in the data' do
+        expect(subject.data).to eq(initial_subject_data)
+      end
     end
   end
 

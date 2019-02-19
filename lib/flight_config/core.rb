@@ -104,7 +104,7 @@ module FlightConfig
     def __data__
       @__data__ ||= TTY::Config.new.tap do |core|
         if __data__mode == :read
-          raise NotImplementedError
+          __data__read(core)
         else
           __data__initialize(core)
         end

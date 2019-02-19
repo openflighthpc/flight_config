@@ -54,8 +54,8 @@ module FlightConfig
       def read(*a)
         new!(*a) do |config|
           if File.exists?(config.path)
-            Core.log(config, 'read')
-            Core.read(config)
+            config.__data__set_read_mode
+            config.__data__
           elsif allow_missing_read(fetch: true)
             Core.log(config, 'read (missing)')
           else
