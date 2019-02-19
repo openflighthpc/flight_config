@@ -52,6 +52,15 @@ module FlightConfig
         end
       end
       alias_method :load, :read
+
+      def read_or_new(*a)
+        new!(*a) do |config|
+          if File.exists?(config.path)
+            config.__data__set_read_mode
+            config.__data__
+          end
+        end
+      end
     end
   end
   Loader = Reader
