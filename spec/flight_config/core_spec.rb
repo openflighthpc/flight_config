@@ -147,18 +147,7 @@ RSpec.describe FlightConfig::Core do
     context 'when creating a new object' do
       with_missing_subject_file
 
-      it 'gets called by __data__ with a TTY::Config' do
-        expect(subject).to receive(:__data__initialize).with(instance_of(TTY::Config))
-        subject.__data__
-      end
-
-      it 'sets up the config' do
-        value = 'my-value'
-        config_class.define_method(:__data__initialize) do |config|
-          config.set(:key, value: value)
-        end
-        expect(subject.__data__.fetch(:key)).to eq(value)
-      end
+      it_uses__data__initialize
     end
   end
 end

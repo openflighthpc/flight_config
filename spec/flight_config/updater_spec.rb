@@ -64,6 +64,8 @@ RSpec.describe FlightConfig::Updater do
       with_missing_subject_file
 
       it_behaves_like 'modifier method', :create
+
+      it_uses__data__initialize
     end
   end
 
@@ -78,6 +80,8 @@ RSpec.describe FlightConfig::Updater do
       with_missing_subject_file
 
       it_behaves_like 'modifier method', :create_or_update
+
+      it_uses__data__initialize
     end
 
     context 'with an existing config' do

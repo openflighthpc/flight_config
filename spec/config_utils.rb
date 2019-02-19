@@ -90,6 +90,21 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
     end
   end
 
+  def self.it_uses__data__initialize
+    it 'uses TTY::Config initializer' do
+      expect(subject).to receive(:__data__initialize).with(instance_of(TTY::Config))
+      subject.__data__
+    end
+
+    it 'can set a default useing the TTY::Config initializer' do
+      value = 'my-value'
+      config_class.define_method(:__data__initialize) do |config|
+        config.set(:key, value: value)
+      end
+      expect(subject.__data__.fetch(:key)).to eq(value)
+    end
+  end
+
   let(:temp_file_input) { [['rspec_flight_config', '.yaml'], '/tmp'] }
 
   let(:config_class) do
