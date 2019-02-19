@@ -48,7 +48,8 @@ module FlightConfig
           Deleter.delete_error_if_missing(config)
           Core.log(config, 'delete')
           Core.lock(config) do
-            Core.read(config)
+            config.__data__set_read_mode
+            config.__data__
             if block_given? && !(yield config)
               Core.log(config, 'delete (failed)')
               Core.write(config)

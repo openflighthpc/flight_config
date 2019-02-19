@@ -34,7 +34,8 @@ RSpec.describe FlightConfig::Deleter do
       config_class.delete(subject_path, &b)
     end
 
-    subject { delete_config }
+    let(:subject_block) { nil }
+    subject { delete_config(&subject_block) }
 
     context 'without an existing file' do
       with_missing_subject_file
@@ -56,16 +57,22 @@ RSpec.describe FlightConfig::Deleter do
         expect(File.exists?(config.path)).to be_falsey
       end
 
-      it 'updates the config if the block returns false' do
-        new_data = 'data added in delete'
-        config = delete_config do |c|
-          c.data = new_data
-          false
-        end
-        expect(config_class.read(config.path).data).to eq(new_data)
-      end
+      context 'with a delete block that returns false' do
+        let(:subject_block) { proc { |_| false } }
 
-      it_behaves_like_initial_subject_data_reader
+        # The block must return false otherwise the file is deleted
+        # and it_uses__data__read will error
+        it_uses__data__read
+
+        it 'updates the config if the block returns false' do
+          new_data = 'data added in delete'
+          config = delete_config do |c|
+            c.data = new_data
+            false
+          end
+          expect(config_class.read(config.path).data).to eq(new_data)
+        end
+      end
     end
   end
 end
