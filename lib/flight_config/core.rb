@@ -74,8 +74,16 @@ module FlightConfig
       end
     end
 
+    def __mode__
+      @__mode__
+    end
+
     def __data__
-      @__data__ ||= TTY::Config.new
+      @__data__ ||= if __mode__ == :read
+        raise NotImplementedError
+      else
+        TTY::Config.new
+      end
     end
 
     def path
