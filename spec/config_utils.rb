@@ -64,16 +64,6 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
     end
   end
 
-  def self.it_behaves_like_initial_subject_data_reader
-    context 'with initial_subject_data' do
-      let(:initial_subject_data) { { 'initial_key' => 'value' } }
-
-      it 'loads in the existing data' do
-        expect(subject.__data__.fetch(:data)).to eq(initial_subject_data)
-      end
-    end
-  end
-
   def self.it_locks_the_file(method)
     it 'runs the block in a file lock' do
       config_class.public_send(method, subject_path) do |config|

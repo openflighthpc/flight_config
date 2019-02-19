@@ -38,11 +38,10 @@ module FlightConfig
       Log.info "#{action}: #{obj.path}"
     end
 
+    # Deprecated: The mode can be switched directly on the object
     def self.read(obj)
-      str = File.read(obj.path)
-      data = (str == PLACEHOLDER ? nil : YAML.load(str))
-      return unless data
-      obj.__data__.merge(data)
+      obj.__data__set_read_mode
+      obj.__data__
     end
 
     def self.write(obj)

@@ -35,28 +35,6 @@ RSpec.describe FlightConfig::Core do
 
   subject { config_class.new(subject_path) }
 
-  describe '::read' do
-    context 'without an existing file' do
-      with_missing_subject_file
-
-      it 'errors' do
-        expect do
-          described_class.read(subject)
-        end.to raise_error(Errno::ENOENT)
-      end
-    end
-
-    context 'with an existing file' do
-      with_existing_subject_file
-
-      before { described_class.read(subject) }
-
-      it_loads_empty_subject_config
-
-      it_behaves_like_initial_subject_data_reader
-    end
-  end
-
   describe '::write' do
     shared_examples 'a standard write' do
       let(:new_subject_data) { nil }
