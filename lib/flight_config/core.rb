@@ -81,7 +81,8 @@ module FlightConfig
 
     def __data__read(tty_config)
       if File.exists?(path)
-        yaml_h = YAML.load(File.read(path))
+        str = File.read(path)
+        yaml_h = (str == Core::PLACEHOLDER ? nil : YAML.load(File.read(path)))
         return unless yaml_h
         tty_config.merge(yaml_h)
       else

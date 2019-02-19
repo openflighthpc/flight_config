@@ -173,6 +173,14 @@ RSpec.describe FlightConfig::Core do
             subject.__data__read(TTY::Config.new)
           end.to raise_error(FlightConfig::MissingFile)
         end
+
+        context 'with a lock' do
+          it 'returns an empty object' do
+            FlightConfig::Core.lock(subject) do
+              subject.__data__read(subject.__data__)
+            end
+          end
+        end
       end
     end
 
@@ -195,17 +203,28 @@ RSpec.describe FlightConfig::Core do
           let(:initial_subject_data) { { 'super-random': 4561 } }
           let(:input) { TTY::Config.new }
 
-          before do
-            subject.__data__
-            subject.__data__read(input)
+          context 'when reading to a different input' do
+            before do
+              subject.__data__
+              subject.__data__read(input)
+            end
+
+            it 'does not implicitly change __data__' do
+              expect(subject.__data__.to_h).to be_empty
+            end
+
+            it 'reads the data onto the input' do
+              expect(input.fetch(:data)).to eq(initial_subject_data)
+            end
           end
 
-          it 'does not implicitly change __data__' do
-            expect(subject.__data__.to_h).to be_empty
-          end
-
-          it 'reads the data onto the input' do
-            expect(input.fetch(:data)).to eq(initial_subject_data)
+          context 'when reading within a file lock' do
+            it 'reads the data' do
+              FlightConfig::Core.lock(subject) do
+                subject.__data__read(subject.__data__)
+              end
+              expect(subject.data).to eq(initial_subject_data)
+            end
           end
         end
       end
