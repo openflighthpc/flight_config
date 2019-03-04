@@ -27,6 +27,7 @@
 require 'flight_config/exceptions'
 require 'flight_config/log'
 require 'flight_config/patches/tty_config'
+require 'fcntl'
 require 'timeout'
 
 module FlightConfig
@@ -62,8 +63,11 @@ module FlightConfig
         File.write(obj.path, PLACEHOLDER)
       end
       begin
-        io = File.open(obj.path, 'r+')
-        Timeout.timeout(0.1) { io.flock(File::LOCK_EX) }
+        # fcntl allows flocking over NFS this implementation was inspired by:
+        # https://tmtms.hatenablog.com/entry/2016/03/11/flock
+        f = File.open(obj.path, 'r+')
+        f.fcntl(Fcntl::F_SETLK, [Fcntl::F_WRLCK, 0].pack('ss'))
+        Timeout.timeout(0.1) { f.flock(File::LOCK_EX) }
       rescue Timeout::Error
         raise ResourceBusy, "The following resource is busy: #{obj.path}"
       end
