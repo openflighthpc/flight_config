@@ -1,39 +1,43 @@
-# FlightConfig
+# FlightConfig library
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/flight_config`. To experiment with that code, run `bin/console` for an interactive prompt.
+A Ruby library for configuration and data file management.
 
-TODO: Delete this and the text above, and describe your gem
+## Overview
+
+This is a library to facilitate the management of configuration and
+data files.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Add the following to your `Gemfile`:
 
-```ruby
+```
 gem 'flight_config'
 ```
 
-And then execute:
+# Contributing
 
-    $ bundle
+Fork the project. Make your feature addition or bug fix. Send a pull
+request. Bonus points for topic branches.
 
-Or install it yourself as:
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
-    $ gem install flight_config
+# Copyright and License
 
-## Usage
+Eclipse Public License 2.0, see [LICENSE.txt](LICENSE.txt) for details.
 
-TODO: Write usage instructions here
+Copyright (C) 2019-present Alces Flight Ltd.
 
-## Development
+This program and the accompanying materials are made available under
+the terms of the Eclipse Public License 2.0 which is available at
+[https://www.eclipse.org/legal/epl-2.0](https://www.eclipse.org/legal/epl-2.0),
+or alternative license terms made available by Alces Flight Ltd -
+please direct inquiries about licensing to
+[licensing@alces-flight.com](mailto:licensing@alces-flight.com).
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/flight_config. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
-## Code of Conduct
-
-Everyone interacting in the FlightConfig project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/flight_config/blob/master/CODE_OF_CONDUCT.md).
+FlightConfig is distributed in the hope that it will be
+useful, but WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER
+EXPRESS OR IMPLIED INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR
+CONDITIONS OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR
+A PARTICULAR PURPOSE. See the [Eclipse Public License 2.0](https://opensource.org/licenses/EPL-2.0) for more
+details.
