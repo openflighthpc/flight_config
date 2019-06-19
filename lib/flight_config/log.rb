@@ -33,10 +33,6 @@ module FlightConfig
     def default_log_path
       '/tmp/flight_config.log'
     end
-
-    def logger
-      @logger ||= Logger.new(FlightConfig.default_log_path)
-    end
   end
 
   module Log
@@ -44,6 +40,8 @@ module FlightConfig
       status = respond_to_missing?(s)
       if status == :log_method
         FlightConfig.logger.send(s, *a, &b)
+      elsif status == :nil_logger
+        # noop
       else
         super
       end
@@ -51,6 +49,7 @@ module FlightConfig
 
     def self.respond_to_missing?(s)
       return :log_method if FlightConfig.logger.respond_to?(s)
+      return :nil_logger if FlightConfig.logger.nil?
       super
     end
   end
