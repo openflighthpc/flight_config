@@ -29,10 +29,6 @@ require 'logger'
 module FlightConfig
   class << self
     attr_accessor :logger
-
-    def default_log_path
-      '/tmp/flight_config.log'
-    end
   end
 
   module Log
