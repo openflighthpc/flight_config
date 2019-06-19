@@ -93,7 +93,7 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
 
     it 'can set a default useing the TTY::Config initializer' do
       value = '__data__initializer-value'
-      config_class.define_method(:__data__initialize) do |config|
+      config_class.send(:define_method, :__data__initialize) do |config|
         config.set(:key, value: value)
       end
       expect(subject.__data__.fetch(:key)).to eq(value)
