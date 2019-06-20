@@ -76,12 +76,11 @@ module FlightConfig
       end
     end
 
-    attr_reader :__data__mode
-
-    def __data__initialize(_tty_config)
-    end
-
     module ClassMethods
+      def path(*_input_args)
+        raise NotImplementedError
+      end
+
       def allow_missing_read(fetch: false)
         if fetch
           @allow_missing_read ||= false
@@ -93,6 +92,15 @@ module FlightConfig
       def new__data__
         TTY::Config.new
       end
+    end
+
+    attr_reader :__data__mode, :input_args
+
+    def initialize(*input_args)
+      @input_args = input_args
+    end
+
+    def __data__initialize(_tty_config)
     end
 
     def __data__read(tty_config)
@@ -131,7 +139,7 @@ module FlightConfig
     end
 
     def path
-      raise NotImplementedError
+      @path ||= self.class.path(*input_args)
     end
   end
 end
