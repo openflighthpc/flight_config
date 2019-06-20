@@ -64,16 +64,15 @@ module FlightConfig
       include Reader::ClassMethods
 
       def update(*a, &b)
-        new!(*a) do |config|
+        new!(*a, read_mode: true) do |config|
           Updater.update_error_if_missing(config)
-          config.__data__set_read_mode
           Updater.create_or_update(config, action: 'update', &b)
         end
       end
 
       def create_or_update(*a, &b)
-        new!(*a) do |config|
-          config.__data__set_read_mode if File.exists?(config.path)
+        mode = File.exists?(new(*a).path)
+        new!(*a, read_mode: mode) do |config|
           Updater.create_or_update(config, action: 'create_or_update', &b)
         end
       end

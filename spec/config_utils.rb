@@ -138,10 +138,12 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
     Class.new do
       classes.each { |c| include c }
 
-      attr_reader :path
+      def self.path(input_path)
+        input_path
+      end
 
-      def initialize(path)
-        @path = path
+      def initialize(path, **h)
+        super
       end
 
       def data=(input)

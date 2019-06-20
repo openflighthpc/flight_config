@@ -44,8 +44,7 @@ module FlightConfig
       end
 
       def read(*a)
-        new!(*a) do |config|
-          config.__data__set_read_mode
+        new!(*a, read_mode: true) do |config|
           config.__data__
         end
       end

@@ -43,7 +43,8 @@ module FlightConfig
 
     # Deprecated: The mode can be switched directly on the object
     def self.read(obj)
-      obj.__data__set_read_mode
+      obj.instance_variable_set(:@__read_mode__, true)
+      obj.instance_variable_set(:@__data__, nil)
       obj.__data__
     end
 
@@ -94,10 +95,11 @@ module FlightConfig
       end
     end
 
-    attr_reader :__data__mode, :input_args
+    attr_reader :__inputs__, :__read_mode__
 
-    def initialize(*input_args)
-      @input_args = input_args
+    def initialize(*input_args, registry: nil, read_mode: nil)
+      @__inputs__ = input_args
+      @__read_mode__ = read_mode
     end
 
     def __data__initialize(_tty_config)
@@ -117,20 +119,9 @@ module FlightConfig
       end
     end
 
-    def __data__set_read_mode
-      # Do not call '__data__' directly as this skips the initialize block
-      if @__data__
-        raise BadModeError, <<~ERROR.chomp
-          The read mode can not be changed after __data__ has been set
-        ERROR
-      else
-        @__data__mode = :read
-      end
-    end
-
     def __data__
       @__data__ ||= self.class.new__data__.tap do |core|
-        if __data__mode == :read
+        if __read_mode__
           __data__read(core)
         else
           __data__initialize(core)
@@ -139,7 +130,7 @@ module FlightConfig
     end
 
     def path
-      @path ||= self.class.path(*input_args)
+      @path ||= self.class.path(*__inputs__)
     end
   end
 end

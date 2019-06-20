@@ -42,11 +42,10 @@ module FlightConfig
 
     module ClassMethods
       def delete(*a)
-        new!(*a) do |config|
+        new!(*a, read_mode: true) do |config|
           Deleter.delete_error_if_missing(config)
           Core.log(config, 'delete')
           Core.lock(config) do
-            config.__data__set_read_mode
             config.__data__
             if block_given? && !(yield config)
               Core.log(config, 'delete (failed)')
