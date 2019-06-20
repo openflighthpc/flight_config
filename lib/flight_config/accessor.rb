@@ -70,9 +70,9 @@ module FlightConfig
         end
       end
 
-      def data_writer(key)
-        self.define_method("#{key}=") do |value|
-          __data__[key] = value
+      def data_writer(key, &b)
+        self.define_method("#{key}=") do |raw|
+          __data__[key] = b ? instance_exec(raw, &b) : raw
         end
       end
     end

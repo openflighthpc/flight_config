@@ -81,7 +81,7 @@ RSpec.describe FlightConfig::Accessor do
 
   describe '::data_writer' do
     let(:initial_data_hash) { nil }
-    let(:new_value) { 'a different value from data_reader' }
+    let(:new_value) { 'new-value' }
 
     before do
       config_class.data_reader(key)
@@ -95,6 +95,28 @@ RSpec.describe FlightConfig::Accessor do
     it 'returns the new value' do
       subject.send(key_eq, new_value)
       expect(subject.send(key)).to eq(new_value)
+    end
+
+    context 'with a block' do
+      let(:block_value) { 'overridden block value' }
+      let(:block) { v = block_value ; proc { |_| v } }
+
+      before do
+        config_class.data_reader(block_key)
+        config_class.data_writer(block_key, &block)
+      end
+
+      it 'yields the new value to be saved' do
+        expect do |b|
+          config_class.data_writer(yield_spec_key, &b)
+          subject.send(yield_spec_key_eq, new_value)
+        end.to yield_with_args(new_value)
+      end
+
+      it 'saves the result of the block' do
+        subject.send(block_key_eq, new_value)
+        expect(subject.send(block_key)).to eq(block_value)
+      end
     end
   end
 end
