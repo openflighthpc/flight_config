@@ -28,7 +28,6 @@
 require 'flight_config/exceptions'
 require 'flight_config/log'
 require 'flight_config/patches/tty_config'
-require 'flight_config/registry'
 require 'timeout'
 
 module FlightConfig

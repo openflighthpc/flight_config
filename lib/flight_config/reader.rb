@@ -27,6 +27,22 @@
 require 'flight_config/core'
 
 module FlightConfig
+  class Registry
+    def read(klass, *args)
+      class_hash = (cache[klass] ||= {})
+      arity_hash = (class_hash[args.length] ||= {})
+      last_arg = args.pop
+      last_hash = args.reduce(arity_hash) { |hash, arg| hash[arg] ||= {} }
+      last_hash[last_arg] ||= klass.new!(*args, last_arg, registry: self, read_mode: true)
+    end
+
+    private
+
+    def cache
+      @cache ||= {}
+    end
+  end
+
   module Reader
     include Core
 
@@ -37,14 +53,14 @@ module FlightConfig
     module ClassMethods
       include Core::ClassMethods
 
-      def new!(*a)
-        new(*a).tap do |config|
+      def new!(*a, **h)
+        new(*a, **h).tap do |config|
           yield config if block_given?
         end
       end
 
       def read(*a, registry: nil)
-        new!(*a, read_mode: true, registry: registry)
+        (registry || Registry.new).read(self, *a)
       end
       alias_method :load, :read
 

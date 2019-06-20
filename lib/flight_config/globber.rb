@@ -34,7 +34,7 @@ module FlightConfig
       def initialize(klass, arity, registry)
         @klass = klass
         @arity = arity
-        @registry = (registry || Registry.new)
+        @registry = (registry || FlightConfig::Registry.new)
       end
 
       def keys
