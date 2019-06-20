@@ -28,7 +28,7 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
   def self.with_existing_subject_file
     let!(:subject_file) do
       Tempfile.create(*temp_file_input).tap do |file|
-        file.write(YAML.dump(initial_data_hash)) unless initial_subject_data.nil?
+        file.write(YAML.dump(initial_data_hash)) unless initial_data_hash.nil?
         file.flush
       end
     end
@@ -160,5 +160,11 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
 
   let(:initial_subject_data) { nil }
 
-  let(:initial_data_hash) { { "data" => initial_subject_data } }
+  let(:initial_data_hash) {
+    if initial_subject_data
+      { "data" => initial_subject_data }
+    else
+      nil
+    end
+  }
 end

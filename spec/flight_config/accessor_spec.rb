@@ -25,41 +25,47 @@
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
 
-require "bundler/setup"
-require "flight_config"
-require 'pp'
-require 'pry'
-require 'pry-byebug'
+require 'flight_config/accessor'
 
-require 'config_utils'
+RSpec.describe FlightConfig::Accessor do
+  include_context 'with config utils', FlightConfig::Reader
+  with_existing_subject_file
+  let(:key) { :test_key }
 
-RSpec.configure do |config|
-  module FakeFSUtils
-    def include_fakefs
-      require 'fakefs/spec_helpers'
-      include FakeFS::SpecHelpers
+  subject { config_class.read(subject_path) }
 
-      before do
-        allow_any_instance_of(FakeFS::File).to receive(:flock)
-      end
+  describe '::data_reader' do
+    let(:value) { 'test-value' }
+    let(:initial_data_hash) { { key => value } }
+
+    before { config_class.data_reader(key) }
+
+    it 'defines the reader instance method' do
+      expect(config_class.instance_methods).to include(key)
+    end
+
+    it 'returns the value' do
+      expect(subject.send(key)).to eq(value)
     end
   end
 
-  config.extend FakeFSUtils
+  describe '::data_writer' do
+    let(:initial_data_hash) { nil }
+    let(:new_value) { 'a different value from data_reader' }
+    let(:key_eq) { :"#{key}=" }
 
-  # Enable flags like --only-failures and --next-failure
-  config.example_status_persistence_file_path = ".rspec_status"
+    before do
+      config_class.data_reader(key)
+      config_class.data_writer(key)
+    end
 
-  # Disable RSpec exposing methods globally on `Module` and `main`
-  config.disable_monkey_patching!
+    it 'defines the writer instance method' do
+      expect(config_class.instance_methods).to include(key_eq)
+    end
 
-  # Run specs in random order to surface order dependencies. If you find an
-  # order dependency and want to debug it, you can fix the order by providing
-  # the seed, which is printed after each run.
-  #     --seed 1234
-  config.order = :random
-
-  config.expect_with :rspec do |c|
-    c.syntax = :expect
+    it 'returns the new value' do
+      subject.send(key_eq, new_value)
+      expect(subject.send(key)).to eq(new_value)
+    end
   end
 end

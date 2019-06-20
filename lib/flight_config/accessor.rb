@@ -25,41 +25,55 @@
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
 
-require "bundler/setup"
-require "flight_config"
-require 'pp'
-require 'pry'
-require 'pry-byebug'
+# NOTE: This is compatibility layer between the accessor and TTY::Config.
+# TTY::Config isn't a good match with FlightConfig as they both try and preform
+# the file handling. Instead a Hashie type object should be used.
+#
+# To facilitate the transition, the accessors use the standard [] and []= methods
+# as these will be defined on most hashie objects. TTY::Config does not implement
+# them however. Hence the need for the compatibility layer
 
-require 'config_utils'
+module FlightConfig
+  module TTYConfigAccessor
+    def [](key)
+      fetch(key)
+    end
 
-RSpec.configure do |config|
-  module FakeFSUtils
-    def include_fakefs
-      require 'fakefs/spec_helpers'
-      include FakeFS::SpecHelpers
-
-      before do
-        allow_any_instance_of(FakeFS::File).to receive(:flock)
+    def []=(key, value)
+      if value.nil?
+        delete(key)
+      else
+        set(key, value: value)
       end
     end
   end
 
-  config.extend FakeFSUtils
+  TTY::Config.include(TTYConfigAccessor)
+end
 
-  # Enable flags like --only-failures and --next-failure
-  config.example_status_persistence_file_path = ".rspec_status"
+module FlightConfig
+  module Accessor
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
 
-  # Disable RSpec exposing methods globally on `Module` and `main`
-  config.disable_monkey_patching!
+    module ClassMethods
+      def data_accessor(key)
+        data_reader(key)
+        data_writer(key)
+      end
 
-  # Run specs in random order to surface order dependencies. If you find an
-  # order dependency and want to debug it, you can fix the order by providing
-  # the seed, which is printed after each run.
-  #     --seed 1234
-  config.order = :random
+      def data_reader(key)
+        self.define_method(key) do
+          __data__[key]
+        end
+      end
 
-  config.expect_with :rspec do |c|
-    c.syntax = :expect
+      def data_writer(key)
+        self.define_method("#{key}=") do |value|
+          __data__[key] = value
+        end
+      end
+    end
   end
 end
