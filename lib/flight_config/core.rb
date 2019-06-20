@@ -79,9 +79,30 @@ module FlightConfig
     end
 
     module ClassMethods
-      def path(*_input_args)
-        raise NotImplementedError
+      # NOTE: The _path method acts as adaptation layer to the two ways the path
+      # could be defined: on the class or instance. Moving forward, the path method
+      # should be defined on the class
+      # NOTE: DO NOT USE THIS METHOD PUBLICLY. Define a `path` method instead
+      def _path(*args)
+        if self.respond_to?(:path)
+          self.path(*args)
+        else
+          msg = <<~WARN.gsub("\n", ' ').chomp
+            FlightConfig Deprecation: #{self}.path is not defined. Falling back to
+            the instance method
+          WARN
+          Log.warn msg
+          $stderr.puts msg
+          self.new(*args).path
+        end
       end
+
+      # *READ ME*: Hack Alart
+      # NOTE: Override this method in your class, and it should just work
+      # TODO: Eventually replace the _path method with this
+      # def path(*_args)
+      #   raise NotImplementedError
+      # end
 
       def allow_missing_read(fetch: false)
         if fetch
@@ -114,7 +135,7 @@ module FlightConfig
     def __data__read(tty_config)
       if File.exists?(path)
         Core.log(self, 'read')
-        str = File.read(path)
+        str = File.read(self.class._path(*__inputs__))
         yaml_h = (str == Core::PLACEHOLDER ? nil : YAML.load(File.read(path)))
         return unless yaml_h
         tty_config.merge(yaml_h)
@@ -135,8 +156,18 @@ module FlightConfig
       end
     end
 
+    # TODO: Eventually remove the error section as all the configs will have a
+    # class path method
     def path
-      @path ||= self.class.path(*__inputs__)
+      @path ||= begin
+        if self.class.respond_to?(:path)
+          self.class.path(*__inputs__)
+        else
+          raise FlightConfigError, <<~ERROR.chomp
+            #{self.class}.path has not been defined!
+          ERROR
+        end
+      end
     end
   end
 end
