@@ -74,7 +74,7 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
 
   def self.it_raises_missing_file
     it 'raises MissingFile' do
-      expect { subject }.to raise_error(FlightConfig::MissingFile)
+      expect { subject.__data__ }.to raise_error(FlightConfig::MissingFile)
     end
   end
 

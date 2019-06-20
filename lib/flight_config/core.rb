@@ -24,9 +24,11 @@
 # For more information on FlightConfig, please visit:
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
+
 require 'flight_config/exceptions'
 require 'flight_config/log'
 require 'flight_config/patches/tty_config'
+require 'flight_config/registry'
 require 'timeout'
 
 module FlightConfig
@@ -99,7 +101,12 @@ module FlightConfig
 
     def initialize(*input_args, registry: nil, read_mode: nil)
       @__inputs__ = input_args
+      @__registry__ = registry
       @__read_mode__ = read_mode
+    end
+
+    def __registry__
+      @__registry__ ||= FlightConfig::Registry.new
     end
 
     def __data__initialize(_tty_config)

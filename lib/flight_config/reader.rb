@@ -43,10 +43,8 @@ module FlightConfig
         end
       end
 
-      def read(*a)
-        new!(*a, read_mode: true) do |config|
-          config.__data__
-        end
+      def read(*a, registry: nil)
+        new!(*a, read_mode: true, registry: registry)
       end
       alias_method :load, :read
 
