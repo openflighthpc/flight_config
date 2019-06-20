@@ -63,9 +63,10 @@ module FlightConfig
         data_writer(key)
       end
 
-      def data_reader(key)
+      def data_reader(key, &b)
         self.define_method(key) do
-          __data__[key]
+          raw = __data__[key]
+          b ? instance_exec(raw, &b) : raw
         end
       end
 
