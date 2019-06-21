@@ -132,24 +132,17 @@ module FlightConfig
     def __data__initialize(_tty_config)
     end
 
-    def __data__read(tty_config)
-      if File.exists?(path)
-        Core.log(self, 'read')
-        str = File.read(path)
-        yaml_h = (str == Core::PLACEHOLDER ? nil : YAML.load(str))
-        return unless yaml_h
-        tty_config.merge(yaml_h)
-      elsif self.class.allow_missing_read(fetch: true)
-        Core.log(self, 'missing (skip read)')
-      else
-        raise MissingFile, "The file does not exist: #{path}"
-      end
-    end
-
     def __data__
       @__data__ ||= self.class.new__data__.tap do |core|
-        if __read_mode__
-          __data__read(core)
+        if __read_mode__ && File.exists?(path)
+          Core.log(self, 'read')
+          str = File.read(path)
+          yaml_h = (str == Core::PLACEHOLDER ? nil : YAML.load(str))
+          core.merge(yaml_h) if yaml_h
+        elsif __read_mode__ && self.class.allow_missing_read(fetch: true)
+          Core.log(self, 'missing (skip read)')
+        elsif __read_mode__
+          raise MissingFile, "The file does not exist: #{path}"
         else
           __data__initialize(core)
         end

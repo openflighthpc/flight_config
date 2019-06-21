@@ -119,24 +119,31 @@ RSpec.describe FlightConfig::Core do
     end
   end
 
-  describe '::new' do
+  describe '::new(read_mode: true)' do
     context 'without a config' do
       with_missing_subject_file
 
-      it_uses__data__initialize
+      subject { config_class.new(subject_path, read_mode: read_mode) }
 
-      describe ':__data__read' do
+      context 'without read_mode' do
+        let(:read_mode) { false }
+
+        it_uses__data__initialize
+      end
+
+      context 'with read mode' do
+        let(:read_mode) { true }
+
         it 'raises MissingFile' do
-          subject
           expect do
-            subject.__data__read(TTY::Config.new)
+            subject.__data__
           end.to raise_error(FlightConfig::MissingFile)
         end
 
         context 'with allow_missing_read' do
           before do
             config_class.class_exec { allow_missing_read }
-            subject.__data__read(subject.__data__)
+            subject.__data__
           end
 
           it 'returns an empty object' do
@@ -147,7 +154,7 @@ RSpec.describe FlightConfig::Core do
         context 'with a lock' do
           it 'returns an empty object' do
             FlightConfig::Core.lock(subject) do
-              subject.__data__read(subject.__data__)
+              subject.__data__
             end
             expect(subject.__data__.to_h).to be_empty
           end
@@ -158,11 +165,19 @@ RSpec.describe FlightConfig::Core do
     context 'with a config' do
       with_existing_subject_file
 
-      it_uses__data__initialize
+      subject { config_class.new(subject_path, read_mode: read_mode) }
 
-      describe ':__data__read' do
+      context 'without read_mode' do
+        let(:read_mode) { false }
+
+        it_uses__data__initialize
+      end
+
+      describe ':with read mode' do
+        let(:read_mode) { true }
+
         context 'with nil data' do
-          before { subject.__data__read(subject.__data__) }
+          before { subject.__data__ }
 
           it 'is a empty data core' do
             expect(subject.__data__.to_h).to be_empty
@@ -171,27 +186,11 @@ RSpec.describe FlightConfig::Core do
 
         context 'with existing data' do
           let(:initial_subject_data) { { 'super-random': 4561 } }
-          let(:input) { TTY::Config.new }
-
-          context 'when reading to a different input' do
-            before do
-              subject.__data__
-              subject.__data__read(input)
-            end
-
-            it 'does not implicitly change __data__' do
-              expect(subject.__data__.to_h).to be_empty
-            end
-
-            it 'reads the data onto the input' do
-              expect(input.fetch(:data)).to eq(initial_subject_data)
-            end
-          end
 
           context 'when reading within a file lock' do
             it 'reads the data' do
               FlightConfig::Core.lock(subject) do
-                subject.__data__read(subject.__data__)
+                subject.__data__
               end
               expect(subject.data).to eq(initial_subject_data)
             end

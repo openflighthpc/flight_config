@@ -100,10 +100,14 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
     end
   end
 
-  def self.it_uses__data__read
-    it 'uses __data__read' do
+  def self.it_reads_the_file
+    it 'is in read mode' do
+      expect(subject.__read_mode__).to be_truthy
+    end
+
+    it 'it loads the YAML' do
+      expect(YAML).to receive(:load).at_least(:once)
       subject.instance_variable_set(:@__data__, nil)
-      expect(subject).to receive(:__data__read).with(instance_of(TTY::Config))
       subject.__data__
     end
 

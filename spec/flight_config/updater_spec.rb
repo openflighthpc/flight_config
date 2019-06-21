@@ -87,7 +87,7 @@ RSpec.describe FlightConfig::Updater do
 
       it_behaves_like 'modifier method', :create_or_update
 
-      it_uses__data__read
+      it_reads_the_file
     end
   end
 
@@ -109,7 +109,7 @@ RSpec.describe FlightConfig::Updater do
 
       it_behaves_like 'modifier method', :update
 
-      it_uses__data__read
+      it_reads_the_file
     end
   end
 end
