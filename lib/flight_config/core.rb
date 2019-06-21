@@ -112,8 +112,12 @@ module FlightConfig
         end
       end
 
-      def new__data__
-        TTY::Config.new
+      def data_core(klass = nil, &b)
+        @data_core ||= -> do
+          obj = (klass || TTY::Config).new
+          b ? b.call(obj) : obj
+        end
+        @data_core.call
       end
     end
 
@@ -133,7 +137,7 @@ module FlightConfig
     end
 
     def __data__
-      @__data__ ||= self.class.new__data__.tap do |core|
+      @__data__ ||= self.class.data_core.tap do |core|
         if __read_mode__ && File.exists?(path)
           Core.log(self, 'read')
           str = File.read(path)
