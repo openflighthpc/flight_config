@@ -135,8 +135,8 @@ module FlightConfig
     def __data__read(tty_config)
       if File.exists?(path)
         Core.log(self, 'read')
-        str = File.read(self.class._path(*__inputs__))
-        yaml_h = (str == Core::PLACEHOLDER ? nil : YAML.load(File.read(path)))
+        str = File.read(path)
+        yaml_h = (str == Core::PLACEHOLDER ? nil : YAML.load(str))
         return unless yaml_h
         tty_config.merge(yaml_h)
       elsif self.class.allow_missing_read(fetch: true)
@@ -158,6 +158,7 @@ module FlightConfig
 
     # TODO: Eventually remove the error section as all the configs will have a
     # class path method
+    # TODO: Make me more like: @path ||= self.class.path(*__inputs__)
     def path
       @path ||= begin
         if self.class.respond_to?(:path)
