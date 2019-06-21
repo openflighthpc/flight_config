@@ -65,12 +65,7 @@ module FlightConfig
       alias_method :load, :read
 
       def read_or_new(*a)
-        new!(*a) do |config|
-          if File.exists?(config.path)
-            config.__data__set_read_mode
-            config.__data__
-          end
-        end
+        File.exists?(_path(*a)) ? read(*a) : new(*a)
       end
     end
   end
