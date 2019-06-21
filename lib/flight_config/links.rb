@@ -24,11 +24,27 @@
 # For more information on FlightConfig, please visit:
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
-require "flight_config/version"
-require 'flight_config/deleter'
-require 'flight_config/globber'
-require 'flight_config/log'
-require 'flight_config/reader'
-require 'flight_config/updater'
-require 'flight_config/accessor'
-require 'flight_config/links'
+
+module FlightConfig
+  module Links
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+
+    module ClassMethods
+      def define_link(key, klass, &b)
+        links_class.define_method(key) do
+          klass.read(*config.instance_exec(&b), registry: config.__registry__)
+        end
+      end
+
+      def links_class
+        @links_class ||= Struct.new(:config)
+      end
+    end
+
+    def links
+      @links ||= self.class.links_class.new(self)
+    end
+  end
+end

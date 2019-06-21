@@ -24,11 +24,27 @@
 # For more information on FlightConfig, please visit:
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
-require "flight_config/version"
-require 'flight_config/deleter'
-require 'flight_config/globber'
-require 'flight_config/log'
-require 'flight_config/reader'
-require 'flight_config/updater'
-require 'flight_config/accessor'
+
 require 'flight_config/links'
+
+RSpec.describe FlightConfig::Links do
+  include_context 'with config utils', FlightConfig::Reader
+
+  let(:subject_path) { '/tmp/test/path' }
+  subject { config_class.read(subject_path) }
+
+  before do
+    config_class.class_exec do
+      define_link(:return_me, self) { [self.path] }
+    end
+  end
+
+  it 'defines the link method' do
+    expect(subject.links).to respond_to(:return_me)
+  end
+
+  it 'can preform a link to itself' do
+    expect(subject.links.return_me).to eq(subject)
+  end
+end
+
