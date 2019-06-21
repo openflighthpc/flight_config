@@ -33,7 +33,7 @@ module FlightConfig
       arity_hash = (class_hash[args.length] ||= {})
       last_arg = args.pop
       last_hash = args.reduce(arity_hash) { |hash, arg| hash[arg] ||= {} }
-      last_hash[last_arg] ||= klass.new!(*args, last_arg, registry: self, read_mode: true)
+      last_hash[last_arg] ||= klass.new(*args, last_arg, registry: self, read_mode: true)
     end
 
     private
