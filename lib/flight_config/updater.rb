@@ -71,7 +71,7 @@ module FlightConfig
       end
 
       def create_or_update(*a, &b)
-        mode = File.exists?(new(*a).path)
+        mode = File.exists?(_path(*a))
         new!(*a, read_mode: mode) do |config|
           Updater.create_or_update(config, action: 'create_or_update', &b)
         end
