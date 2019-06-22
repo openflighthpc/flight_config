@@ -25,51 +25,65 @@
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
 
-require 'flight_config/core'
+# NOTE: This is compatibility layer between the accessor and TTY::Config.
+# TTY::Config isn't a good match with FlightConfig as they both try and preform
+# the file handling. Instead a Hashie type object should be used.
+#
+# To facilitate the transition, the accessors use the standard [] and []= methods
+# as these will be defined on most hashie objects. TTY::Config does not implement
+# them however. Hence the need for the compatibility layer
 
 module FlightConfig
-  class Registry
-    def read(klass, *args)
-      class_hash = (cache[klass] ||= {})
-      arity_hash = (class_hash[args.length] ||= {})
-      last_arg = args.pop
-      last_hash = args.reduce(arity_hash) { |hash, arg| hash[arg] ||= {} }
-      last_hash[last_arg] ||= klass.new(*args, last_arg, registry: self, read_mode: true)
+  module TTYConfigAccessor
+    def [](key)
+      fetch(key)
     end
 
-    private
-
-    def cache
-      @cache ||= {}
+    def []=(key, value)
+      if value.nil?
+        delete(key)
+      else
+        set(key, value: value)
+      end
     end
   end
 
-  module Reader
-    include Core
+  TTY::Config.include(TTYConfigAccessor)
+end
 
+module FlightConfig
+  module Accessor
     def self.included(base)
       base.extend(ClassMethods)
     end
 
     module ClassMethods
-      include Core::ClassMethods
+      def data_accessor(key)
+        data_reader(key)
+        data_writer(key)
+      end
 
-      def new!(*a, **h)
-        new(*a, **h).tap do |config|
-          yield config if block_given?
+      def data_reader(key, &b)
+        self.define_method(key) do
+          raw = __data__[key]
+          b ? instance_exec(raw, &b) : raw
         end
       end
 
-      def read(*a, registry: nil)
-        (registry || Registry.new).read(self, *a)
+      def data_writer(key, &b)
+        self.define_method("#{key}=") do |raw|
+          __data__[key] = b ? instance_exec(raw, &b) : raw
+        end
       end
-      alias_method :load, :read
 
-      def read_or_new(*a)
-        File.exists?(_path(*a)) ? read(*a) : new(*a)
+      def define_input_methods_from_path_parameters
+        self.method(:path)
+            .parameters
+            .select { |type, _| type == :req }
+            .each_with_index do |(_, arg), idx|
+          define_method(arg) { __inputs__[idx] }
+        end
       end
     end
   end
-  Loader = Reader
 end
-

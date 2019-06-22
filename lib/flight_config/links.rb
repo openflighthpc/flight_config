@@ -24,49 +24,31 @@
 # For more information on FlightConfig, please visit:
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
-require 'flight_config/reader'
-require 'flight_config/globber_spec'
 
-RSpec.describe FlightConfig::Reader do
-  describe '::read' do
-    include_context 'with config utils'
-
-    def read_subject
-      config_class.read(subject_path)
+module FlightConfig
+  module Links
+    def self.included(base)
+      base.extend(ClassMethods)
     end
 
-    subject { read_subject }
+    module ClassMethods
+      include Globber::ClassMethods
 
-    context 'without an existing file' do
-      with_missing_subject_file
-
-      it_raises_missing_file
-
-      context 'with allow_missing_read' do
-        before { config_class.allow_missing_read }
-
-        it 'does not error' do
-          expect { subject }.not_to raise_error
+      def define_link(key, klass, glob: false, &b)
+        links_class.define_method(key) do
+          args = config.instance_exec(&b)
+          method = (glob ? :glob_read : :read)
+          klass.public_send(method, *args, registry: config.__registry__)
         end
+      end
 
-        it_loads_empty_subject_config
+      def links_class
+        @links_class ||= Struct.new(:config)
       end
     end
 
-    context 'with an existing file' do
-      with_existing_subject_file
-
-      it_loads_empty_subject_config
-      it_reads_the_file
-
-      it 'ignores the file lock' do
-        FlightConfig::Core.lock(subject) do
-          expect do
-            Timeout.timeout(1) { read_subject }
-          end.not_to raise_error
-        end
-      end
+    def links
+      @links ||= self.class.links_class.new(self)
     end
   end
 end
-

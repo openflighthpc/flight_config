@@ -24,6 +24,7 @@
 # For more information on FlightConfig, please visit:
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
+
 require "bundler/setup"
 require "flight_config"
 require 'pp'

@@ -59,8 +59,8 @@ RSpec.describe FlightConfig::Deleter do
         let(:subject_block) { proc { |_| false } }
 
         # The block must return false otherwise the file is deleted
-        # and it_uses__data__read will error
-        it_uses__data__read
+        # and it_reads_the_file will error
+        it_reads_the_file
 
         it 'updates the config if the block returns false' do
           new_data = 'data added in delete'

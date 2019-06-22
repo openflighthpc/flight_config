@@ -28,7 +28,7 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
   def self.with_existing_subject_file
     let!(:subject_file) do
       Tempfile.create(*temp_file_input).tap do |file|
-        file.write(YAML.dump(initial_data_hash)) unless initial_subject_data.nil?
+        file.write(YAML.dump(initial_data_hash)) unless initial_data_hash.nil?
         file.flush
       end
     end
@@ -74,7 +74,7 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
 
   def self.it_raises_missing_file
     it 'raises MissingFile' do
-      expect { subject }.to raise_error(FlightConfig::MissingFile)
+      expect { subject.__data__ }.to raise_error(FlightConfig::MissingFile)
     end
   end
 
@@ -100,10 +100,14 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
     end
   end
 
-  def self.it_uses__data__read
-    it 'uses __data__read' do
+  def self.it_reads_the_file
+    it 'is in read mode' do
+      expect(subject.__read_mode__).to be_truthy
+    end
+
+    it 'it loads the YAML' do
+      expect(YAML).to receive(:load).at_least(:once)
       subject.instance_variable_set(:@__data__, nil)
-      expect(subject).to receive(:__data__read).with(instance_of(TTY::Config))
       subject.__data__
     end
 
@@ -138,10 +142,12 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
     Class.new do
       classes.each { |c| include c }
 
-      attr_reader :path
+      def self.path(input_path)
+        input_path
+      end
 
-      def initialize(path)
-        @path = path
+      def initialize(path, **h)
+        super
       end
 
       def data=(input)
@@ -160,5 +166,11 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
 
   let(:initial_subject_data) { nil }
 
-  let(:initial_data_hash) { { "data" => initial_subject_data } }
+  let(:initial_data_hash) {
+    if initial_subject_data
+      { "data" => initial_subject_data }
+    else
+      nil
+    end
+  }
 end

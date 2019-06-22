@@ -29,11 +29,12 @@ require 'flight_config/reader'
 module FlightConfig
   module Globber
     class Matcher
-      attr_reader :klass, :arity
+      attr_reader :klass, :arity, :registry
 
-      def initialize(klass, arity)
+      def initialize(klass, arity, registry)
         @klass = klass
         @arity = arity
+        @registry = (registry || FlightConfig::Registry.new)
       end
 
       def keys
@@ -50,7 +51,7 @@ module FlightConfig
       def read(path)
         data = regex.match(path)
         init_args = keys.map { |key| data[key] }
-        klass.read(*init_args)
+        klass.read(*init_args, registry: registry)
       end
     end
 
@@ -59,8 +60,8 @@ module FlightConfig
     end
 
     module ClassMethods
-      def glob_read(*a)
-        matcher = Globber::Matcher.new(self, a.length)
+      def glob_read(*a, registry: nil)
+        matcher = Globber::Matcher.new(self, a.length, registry)
         glob_regex = self.new(*a).path
         Dir.glob(glob_regex)
            .map { |path| matcher.read(path) }

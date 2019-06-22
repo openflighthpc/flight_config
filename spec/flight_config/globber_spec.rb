@@ -35,7 +35,8 @@ RSpec.describe FlightConfig::Globber do
 
       attr_reader :path, :args
 
-      def initialize(*args)
+      def initialize(*args, **h)
+        super
         @args = args
         parts = args.map { |arg| "var/#{arg}" }
         @path = File.join('/tmp', *parts, 'etc/config.yaml')
@@ -79,7 +80,7 @@ RSpec.describe FlightConfig::Globber do
         end
 
         it 'resolves the arguments correctly' do
-          expect(subject.first.args).to eq(name_args)
+          expect(subject.first.__inputs__).to eq(name_args)
         end
       end
     end
