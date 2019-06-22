@@ -75,6 +75,15 @@ module FlightConfig
           __data__[key] = b ? instance_exec(raw, &b) : raw
         end
       end
+
+      def define_input_methods_from_path_parameters
+        self.method(:path)
+            .parameters
+            .select { |type, _| type == :req }
+            .each_with_index do |(_, arg), idx|
+          define_method(arg) { __inputs__[idx] }
+        end
+      end
     end
   end
 end

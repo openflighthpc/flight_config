@@ -125,6 +125,8 @@ module FlightConfig
 
     def initialize(*input_args, registry: nil, read_mode: nil)
       @__inputs__ = input_args
+      # TODO: Make this @path = self.class.path(*__inputs__)
+      self.path # Ensure the path can be established with the __inputs__
       @__registry__ = registry
       @__read_mode__ = read_mode
     end
@@ -155,7 +157,7 @@ module FlightConfig
 
     # TODO: Eventually remove the error section as all the configs will have a
     # class path method
-    # TODO: Make me more like: @path ||= self.class.path(*__inputs__)
+    # TODO: Set the path in initialize
     def path
       @path ||= begin
         if self.class.respond_to?(:path)

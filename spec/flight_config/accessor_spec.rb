@@ -119,4 +119,28 @@ RSpec.describe FlightConfig::Accessor do
       end
     end
   end
+
+  describe '::define_path_and_args' do
+    let(:new_class) do
+      klass = described_class
+      Class.new do
+        include FlightConfig::Reader
+        include klass
+
+        def self.path(arg1, arg2)
+        end
+        define_input_methods_from_path_parameters
+      end
+    end
+
+    def generate_value(arg)
+      "#{arg}-value"
+    end
+
+    it 'defines the argument methods' do
+      obj = new_class.new(1, 2)
+      expect(obj).to respond_to(:arg1)
+      expect(obj.arg2).to eq(2)
+    end
+  end
 end
