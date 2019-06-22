@@ -32,9 +32,13 @@ module FlightConfig
     end
 
     module ClassMethods
-      def define_link(key, klass, &b)
+      include Globber::ClassMethods
+
+      def define_link(key, klass, glob: false, &b)
         links_class.define_method(key) do
-          klass.read(*config.instance_exec(&b), registry: config.__registry__)
+          args = config.instance_exec(&b)
+          method = (glob ? :glob_read : :read)
+          klass.public_send(method, *args, registry: config.__registry__)
         end
       end
 
