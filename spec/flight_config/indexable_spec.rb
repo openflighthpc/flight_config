@@ -55,7 +55,17 @@ RSpec.describe FlightConfig::Indexable do
     context 'with an existing config' do
       with_existing_subject_file
 
-      include_examples 'creates the index'
+      context 'without any initial data' do
+        include_examples 'creates the index'
+      end
+
+      context 'with initial data' do
+        before do
+          File.write(subject_path, YAML.dump(key: 'I should not be loaded'))
+        end
+
+        include_examples 'creates the index'
+      end
     end
   end
 end

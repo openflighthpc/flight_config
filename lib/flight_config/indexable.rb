@@ -56,5 +56,9 @@ module FlightConfig
         end
       end
     end
+
+    def __data__
+      {}
+    end
   end
 end

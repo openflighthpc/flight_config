@@ -57,7 +57,6 @@ RSpec.shared_context 'with config utils' do |*additional_includes|
 
   def self.it_loads_empty_subject_config
     it 'loads an empty hash equivalent TTY::Config object' do
-      expect(subject.__data__).to be_a(TTY::Config)
       expect(subject.__data__.to_h).to be_empty
     end
   end
