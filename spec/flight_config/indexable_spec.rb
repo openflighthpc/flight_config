@@ -30,6 +30,39 @@ require 'flight_config/indexable'
 RSpec.describe FlightConfig::Indexable do
   include_context 'with config utils'
 
+  shared_examples 'does not delete the index' do
+    with_existing_subject_file
+
+    it 'does not error on data load' do
+      expect do
+        subject.__data__
+      end.not_to raise_error
+    end
+
+    it 'does not delete the file' do
+      begin
+        subject.__data__
+      rescue FlightConfig::InvalidIndex
+        # noop
+      end
+      expect(File).to exist(subject.path)
+    end
+  end
+
+  describe '::new' do
+    def new_index
+      config_class.new(subject_path)
+    end
+
+    subject { new_index }
+
+    context 'with an invalid subject' do
+      before { allow(subject).to receive(:valid?).and_return(false) }
+
+      include_examples 'does not delete the index'
+    end
+  end
+
   describe '::read' do
     def read_subject
       config_class.read(subject_path)
@@ -37,6 +70,12 @@ RSpec.describe FlightConfig::Indexable do
 
     subject { read_subject }
     before { allow(subject).to receive(:valid?).and_return(validity) }
+
+    context 'with a valid subject' do
+      let(:validity) { true }
+
+      include_examples 'does not delete the index'
+    end
 
     context 'with an exsting index' do
       with_existing_subject_file

@@ -63,7 +63,7 @@ module FlightConfig
 
     def __data__
       @__data__ ||= begin
-        if !valid?
+        if __read_mode__ && !valid?
           FlightConfig::Core.log(self, 'Removing index')
           FileUtils.rm_f path
           raise InvalidIndex, 'Failed to load index as it is invalid'
