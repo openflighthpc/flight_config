@@ -57,8 +57,18 @@ module FlightConfig
       end
     end
 
+    def valid?
+      raise NotImplementedError
+    end
+
     def __data__
-      {}
+      @__data__ ||= begin
+        if !valid?
+          FlightConfig::Core.log(self, 'Removing index')
+          FileUtils.rm_f path
+          raise InvalidIndex, 'Failed to load index as it is invalid'
+        end
+      end
     end
   end
 end

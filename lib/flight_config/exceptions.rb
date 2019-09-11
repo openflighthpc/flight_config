@@ -30,4 +30,5 @@ module FlightConfig
   class ResourceBusy < FlightConfigError; end
   class MissingFile < FlightConfigError; end
   class CreateError < FlightConfigError; end
+  class InvalidIndex < FlightConfigError; end
 end

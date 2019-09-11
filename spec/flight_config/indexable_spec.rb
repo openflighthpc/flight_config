@@ -28,9 +28,41 @@
 require 'flight_config/indexable'
 
 RSpec.describe FlightConfig::Indexable do
-  describe '::create_or_update' do
-    include_context 'with config utils'
+  include_context 'with config utils'
 
+  describe '::read' do
+    def read_subject
+      config_class.read(subject_path)
+    end
+
+    subject { read_subject }
+    before { allow(subject).to receive(:valid?).and_return(validity) }
+
+    context 'with an exsting index' do
+      with_existing_subject_file
+
+      context 'with an invalid subject' do
+        let(:validity) { false }
+
+        it 'errors on data load' do
+          expect do
+            subject.__data__
+          end.to raise_error(FlightConfig::InvalidIndex)
+        end
+
+        it 'deletes the file' do
+          begin
+            subject.__data__
+          rescue FlightConfig::InvalidIndex
+            # noop
+          end
+          expect(File).not_to exist(subject.path)
+        end
+      end
+    end
+  end
+
+  describe '::create_or_update' do
     def create_or_update_index
       config_class.create_or_update(subject_path)
     end
@@ -38,6 +70,8 @@ RSpec.describe FlightConfig::Indexable do
     subject { create_or_update_index }
 
     shared_examples 'creates the index' do
+      before { allow(subject).to receive(:valid?).and_return(true) }
+
       it_loads_empty_subject_config
 
       it 'ensures the file exists' do
