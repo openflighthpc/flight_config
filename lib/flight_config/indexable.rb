@@ -68,6 +68,7 @@ module FlightConfig
           FileUtils.rm_f path
           raise InvalidIndex, 'Failed to load index as it is invalid'
         end
+        {}
       end
     end
   end
