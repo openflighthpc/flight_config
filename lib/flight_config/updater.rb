@@ -74,7 +74,7 @@ module FlightConfig
         mode = File.exists?(_path(*a))
         new!(*a, read_mode: mode) do |config|
           Updater.create_or_update(config, action: 'create_or_update', &b)
-        end
+        end.tap { |c| c.generate_indices if c.respond_to?(:generate_indices) }
       end
 
       def create(*a, &b)
