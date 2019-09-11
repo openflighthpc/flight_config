@@ -24,6 +24,52 @@
 # For more information on FlightConfig, please visit:
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
+
+require 'flight_config/reader'
+require 'flight_config/globber'
+
 module FlightConfig
-  VERSION = "0.3.0"
+  module Indexable
+    include FlightConfig::Reader
+    include FlightConfig::Globber
+
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+
+    module ClassMethods
+      include FlightConfig::Reader::ClassMethods
+
+      def glob_read(*a)
+        super.reject do |index|
+          next if index.valid?
+          FileUtils.rm_f path
+          true
+        end
+      end
+
+      def create_or_update(*a)
+        new!(*a, read_mode: true) do |index|
+          Core.log(index, "Generating index")
+          FileUtils.mkdir_p File.dirname(index.path)
+          FileUtils.touch index.path
+        end
+      end
+    end
+
+    def valid?
+      raise NotImplementedError
+    end
+
+    def __data__
+      @__data__ ||= begin
+        if __read_mode__ && !valid?
+          FlightConfig::Core.log(self, 'Removing index')
+          FileUtils.rm_f path
+          raise InvalidIndex, 'Failed to load index as it is invalid'
+        end
+        {}
+      end
+    end
+  end
 end

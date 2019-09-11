@@ -24,6 +24,30 @@
 # For more information on FlightConfig, please visit:
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
-module FlightConfig
-  VERSION = "0.3.0"
+
+module FightConfig
+  module HasIndices
+    def included(base)
+      base.extend(ClassMethods)
+    end
+
+    module ClassMethods
+      def has_indices(klass, &b)
+        @indices ||= []
+        @indices << [klass, b]
+      end
+
+      def indices
+        @indices ||= []
+        base = (defined?(super) ? super : [])
+        [*base, *@indices]
+      end
+    end
+
+    def generate_indices
+      self.class.indices.each do |klass, block|
+        instance_exec(klass.method(:create_or_update), &block)
+      end
+    end
+  end
 end
