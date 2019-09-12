@@ -39,6 +39,7 @@ module FlightConfig
 
     module ClassMethods
       include FlightConfig::Reader::ClassMethods
+      include FlightConfig::Globber::ClassMethods
 
       def glob_read(*a)
         super.reject do |index|
