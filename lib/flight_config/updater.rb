@@ -43,6 +43,7 @@ module FlightConfig
         Core.log(config, "#{action} (write)")
         Core.write(config)
       end
+      config.generate_indices if config.respond_to?(:generate_indices)
       Core.log(config, "#{action} (done)")
     end
 
@@ -74,7 +75,7 @@ module FlightConfig
         mode = File.exists?(_path(*a))
         new!(*a, read_mode: mode) do |config|
           Updater.create_or_update(config, action: 'create_or_update', &b)
-        end.tap { |c| c.generate_indices if c.respond_to?(:generate_indices) }
+        end
       end
 
       def create(*a, &b)
