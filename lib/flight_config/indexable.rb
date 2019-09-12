@@ -39,11 +39,12 @@ module FlightConfig
 
     module ClassMethods
       include FlightConfig::Reader::ClassMethods
+      include FlightConfig::Globber::ClassMethods
 
       def glob_read(*a)
         super.reject do |index|
           next if index.valid?
-          FileUtils.rm_f path
+          FileUtils.rm_f index.path
           true
         end
       end

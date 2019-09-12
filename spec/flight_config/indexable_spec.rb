@@ -80,6 +80,12 @@ RSpec.describe FlightConfig::Indexable do
     context 'with an exsting index' do
       with_existing_subject_file
 
+      context 'with a valid subject' do
+        let(:validity) { true }
+
+        it { expect(File).to exist(subject.path) }
+      end
+
       context 'with an invalid subject' do
         let(:validity) { false }
 
