@@ -25,9 +25,9 @@
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
 
-module FightConfig
+module FlightConfig
   module HasIndices
-    def included(base)
+    def self.included(base)
       base.extend(ClassMethods)
     end
 

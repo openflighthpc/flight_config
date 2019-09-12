@@ -25,5 +25,5 @@
 # https://github.com/openflighthpc/flight_config
 #==============================================================================
 module FlightConfig
-  VERSION = "0.3.0"
+  VERSION = "0.3.1"
 end
